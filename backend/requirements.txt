@@ -1,0 +1,16 @@
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.6.0
+pydantic-settings>=2.1.0
+python-dotenv>=1.0.0
+httpx>=0.26.0
+qdrant-client>=1.7.0
+neo4j>=5.16.0
+sqlalchemy>=2.0.25
+psycopg2-binary>=2.9.9
+langchain>=0.1.0
+langgraph>=0.0.20
+tiktoken>=0.5.2
+pytest>=8.0.0
+python-multipart>=0.0.6
+cryptography>=42.0.0

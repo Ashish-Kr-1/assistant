@@ -1,3 +1,7 @@
+:root {
+    --color-warm-white: #fffdf6;
+}
+
 body {
     margin: 0;
     padding: 0;

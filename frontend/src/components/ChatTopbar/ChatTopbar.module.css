@@ -1,0 +1,164 @@
+/* ---------- shared neumorphic primitives ---------- */
+
+.nmRaised {
+  background: var(--surface);
+  box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+  transition: box-shadow 220ms ease, transform 220ms ease, background 320ms ease;
+}
+
+.nmRaised:active {
+  box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+}
+
+.nmInset {
+  background: var(--surface);
+  box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+  transition: background 320ms ease, box-shadow 320ms ease;
+}
+
+.chatTopbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border-hairline);
+  flex-shrink: 0;
+}
+
+.hamburgerBtn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.topbarBrand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+  animation: topbarBrandIn 260ms ease;
+}
+
+@keyframes topbarBrandIn {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.sidebarBrandMark {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--accent-ochre), var(--accent-green-deep));
+  color: var(--color-warm-white);
+  font-family: "Fraunces", serif;
+  font-weight: 600;
+  font-size: 15px;
+  flex-shrink: 0;
+  box-shadow: 2px 2px 6px var(--shadow-dark);
+}
+
+.sidebarBrandText {
+  font-family: "Fraunces", serif;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 1.15;
+}
+
+.sidebarBrandText span {
+  display: block;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+
+.jurisdictionToggle {
+  margin-left: auto;
+  display: flex;
+  border-radius: 14px;
+  padding: 4px;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.jurisdictionToggle button {
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  padding: 7px 14px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.jurisdictionToggle button.active.national {
+  background: var(--accent-ochre);
+  color: var(--color-warm-white);
+  box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.12);
+}
+
+.jurisdictionToggle button.active.international {
+  background: var(--accent-green);
+  color: var(--color-warm-white);
+  box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.12);
+}
+
+/* ---------- theme toggle ---------- */
+
+.themeToggle {
+  position: relative;
+  width: 54px;
+  height: 30px;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 7px;
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.themeToggle svg {
+  position: relative;
+  z-index: 1;
+  width: 13px;
+  height: 13px;
+}
+
+.themeToggleThumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent-ochre);
+  box-shadow: 2px 2px 6px var(--shadow-dark);
+  transition: transform 320ms cubic-bezier(0.4, 0, 0.2, 1), background 320ms ease;
+}
+
+.themeToggleThumb.dark {
+  transform: translateX(24px);
+  background: var(--accent-green);
+}

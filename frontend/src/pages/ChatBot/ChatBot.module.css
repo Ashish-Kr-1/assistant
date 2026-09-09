@@ -1,0 +1,67 @@
+.chatbotPage {
+  --bg-base: #ede6d8;
+  --surface: #e8e0d0;
+  --shadow-light: #fffdf6;
+  --shadow-dark: #c9bfa8;
+  --accent-ochre: #b8834a;
+  --accent-ochre-deep: #8c5f2e;
+  --accent-green: #6b7f5b;
+  --accent-green-deep: #4a5a3e;
+  --text-primary: #3a342a;
+  --text-muted: #6e6656;
+  --border-hairline: #ddd3be;
+  --chat-bg: #f5f0e4;
+  --chip-bg: #2c2b1d;
+  --chip-fg: #9dae87;
+
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: "Inter", system-ui, sans-serif;
+  overflow: hidden;
+  transition: background 320ms ease, color 320ms ease;
+}
+
+.chatbotPage[data-theme="dark"] {
+  --bg-base: #242119;
+  --surface: #282419;
+  --shadow-light: #2f2b1e;
+  --shadow-dark: #1f1c14;
+  --accent-ochre: #a06c3e;
+  --accent-ochre-deep: #e8b573;
+  --accent-green: #8fa37a;
+  --accent-green-deep: #a3b892;
+  --text-primary: #ede6d8;
+  --text-muted: #b0a78f;
+  --border-hairline: #362f22;
+  --chat-bg: #2a2419;
+  --chip-bg: #ece2ce;
+  --chip-fg: #52633f;
+}
+
+.chatbotPage * {
+  box-sizing: border-box;
+}
+
+/* ---------- main chat area (lighter ochre) ---------- */
+
+.chatMain {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--chat-bg);
+  transition: background 320ms ease;
+}
+
+.disclaimerBar {
+  max-width: 720px;
+  width: calc(100% - 48px);
+  margin: 0 auto;
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-muted);
+  padding-bottom: 8px;
+}

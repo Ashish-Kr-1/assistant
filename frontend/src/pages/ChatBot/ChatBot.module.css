@@ -27,9 +27,9 @@
 .chatbotPage[data-theme="dark"] {
   --bg-base: #242119;
   --surface: #282419;
-  --shadow-light: #332e22;
-  --shadow-dark: #161410;
-  --accent-ochre: #d9a05b;
+  --shadow-light: #2f2b1e;
+  --shadow-dark: #1f1c14;
+  --accent-ochre: #a06c3e;
   --accent-ochre-deep: #e8b573;
   --accent-green: #8fa37a;
   --accent-green-deep: #a3b892;
@@ -111,8 +111,8 @@
 .chatbotPage[data-theme="dark"] .sidebar {
   --bg-base: #1c2616;
   --surface: #22301b;
-  --shadow-light: #2b3a21;
-  --shadow-dark: #131b0e;
+  --shadow-light: #283920;
+  --shadow-dark: #1b2515;
   --text-primary: #e7e6d6;
   --text-muted: #a7b598;
   --border-hairline: #2e3a22;
@@ -502,6 +502,7 @@
   color: #fffdf6;
   border-bottom-right-radius: 6px;
   box-shadow: 4px 4px 10px var(--shadow-dark);
+  transition: background 320ms ease;
 }
 
 .msgRow.assistant .msgBubble {
@@ -553,6 +554,42 @@
   font-size: 11px;
   font-weight: 600;
   color: var(--accent-ochre-deep);
+}
+
+/* ---------- follow-up suggestions ---------- */
+
+.followUpRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: 720px;
+  width: 100%;
+  margin: 42px auto 0;
+}
+
+.followUpChip {
+  border: none;
+  border-radius: 14px;
+  padding: 9px 15px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: left;
+  color: var(--accent-ochre-deep);
+  background: var(--surface);
+  box-shadow: 3px 3px 8px var(--shadow-dark), -3px -3px 8px var(--shadow-light);
+  cursor: pointer;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.followUpChip:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 4px 4px 10px var(--shadow-dark), -4px -4px 10px var(--shadow-light);
+}
+
+.followUpChip:active {
+  transform: translateY(0);
+  box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
 }
 
 /* ---------- typing indicator ---------- */

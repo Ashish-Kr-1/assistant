@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react"
+import { Fragment, useState, useRef, useEffect } from "react"
 import styles from "./ChatBot.module.css"
 
 const currentUser = {
@@ -31,10 +31,21 @@ const initialMessages = [
     text: "No. A formulation drawn directly from a First Schedule classical text is treated as traditional knowledge and is barred from patenting as an existing product. A patent may still cover a novel, inventive modification — e.g. a new extraction process or a synergistic combination not disclosed in the classical texts.",
     citations: ["Patents Act 1970, Sec 3(p)", "TKDL Prior-Art Classification"],
     confidence: "High confidence",
+    followUps: [
+      "What counts as a novel, inventive modification here?",
+      "Does this bar apply to Ayurveda-Aahar products too?",
+      "What ABS duties would apply if I export this formulation?",
+    ],
   },
 ]
 
 const UNDER_CONSTRUCTION_REPLY = "I am under construction, feel free to ask anything!"
+
+const UNDER_CONSTRUCTION_FOLLOWUPS = [
+  "What documents are needed for an ABS approval?",
+  "How is a formulation classified under Indian law?",
+  "What's the difference between National and International guidance here?",
+]
 
 function HamburgerIcon() {
   return <span className={styles.bar} aria-hidden="true" />
@@ -148,14 +159,17 @@ export default function ChatBot() {
     setIsResizingSidebar(true)
   }
 
-  function handleSend() {
-    const text = draft.trim()
+  function handleSend(overrideText) {
+    const text = (overrideText ?? draft).trim()
     if (!text || isTyping) return
     setMessages((prev) => [...prev, { id: `u-${Date.now()}`, role: "user", text }])
     setDraft("")
     setIsTyping(true)
     replyTimeoutRef.current = setTimeout(() => {
-      setMessages((prev) => [...prev, { id: `a-${Date.now()}`, role: "assistant", text: UNDER_CONSTRUCTION_REPLY }])
+      setMessages((prev) => [
+        ...prev,
+        { id: `a-${Date.now()}`, role: "assistant", text: UNDER_CONSTRUCTION_REPLY, followUps: UNDER_CONSTRUCTION_FOLLOWUPS },
+      ])
       setIsTyping(false)
     }, 5000)
   }
@@ -269,24 +283,43 @@ export default function ChatBot() {
         </div>
 
         <div className={styles.messagesScroll} ref={scrollRef}>
-          {messages.map((msg) => (
-            <div className={`${styles.msgRow} ${styles[msg.role]}`} key={msg.id}>
-              <div className={`${styles.msgBubble} ${msg.role === "assistant" ? styles.nmRaised : ""}`}>
-                {msg.text}
-                {msg.citations && (
-                  <div className={styles.msgMeta}>
-                    {msg.citations.map((c) => (
-                      <span className={styles.citationChip} key={c}>
-                        <span className={styles.citationMark} aria-hidden="true" />
-                        {c}
-                      </span>
+          {messages.map((msg, index) => {
+            const isLastMessage = index === messages.length - 1
+            return (
+              <Fragment key={msg.id}>
+                <div className={`${styles.msgRow} ${styles[msg.role]}`}>
+                  <div className={`${styles.msgBubble} ${msg.role === "assistant" ? styles.nmRaised : ""}`}>
+                    {msg.text}
+                    {msg.citations && (
+                      <div className={styles.msgMeta}>
+                        {msg.citations.map((c) => (
+                          <span className={styles.citationChip} key={c}>
+                            <span className={styles.citationMark} aria-hidden="true" />
+                            {c}
+                          </span>
+                        ))}
+                        <span className={styles.confidenceChip}>{msg.confidence}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {msg.role === "assistant" && msg.followUps && isLastMessage && !isTyping && (
+                  <div className={styles.followUpRow}>
+                    {msg.followUps.map((question) => (
+                      <button
+                        type="button"
+                        key={question}
+                        className={styles.followUpChip}
+                        onClick={() => handleSend(question)}
+                      >
+                        {question}
+                      </button>
                     ))}
-                    <span className={styles.confidenceChip}>{msg.confidence}</span>
                   </div>
                 )}
-              </div>
-            </div>
-          ))}
+              </Fragment>
+            )
+          })}
           {isTyping && (
             <div className={`${styles.msgRow} ${styles.assistant}`}>
               <div className={`${styles.msgBubble} ${styles.nmRaised} ${styles.typingBubble}`}>

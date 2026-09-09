@@ -238,6 +238,10 @@
   color: var(--text-muted);
 }
 
+.logoutLink {
+  text-decoration: none;
+}
+
 .logoutBtn {
   display: flex;
   align-items: center;

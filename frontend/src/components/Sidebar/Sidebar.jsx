@@ -1,5 +1,6 @@
 import styles from "./Sidebar.module.css"
 import { LogoutIcon } from "../Icons/Icons"
+import { Link } from "react-router-dom"
 
 export default function Sidebar({
   isOpen,
@@ -52,10 +53,12 @@ export default function Sidebar({
             <div className={styles.profileRole}>{currentUser.role}</div>
           </div>
         </div>
-        <button type="button" className={styles.logoutBtn}>
-          <LogoutIcon />
-          Log out
-        </button>
+        <Link to="/" className={styles.logoutLink}>
+          <button type="button" className={styles.logoutBtn}>
+            <LogoutIcon />
+            Log out
+          </button>
+        </Link>
       </div>
 
       {isOpen && (

@@ -45,6 +45,7 @@ postgres_data/
 .DS_Store
 Thumbs.db
 
+<<<<<<< HEAD
 CLAUDE.md
 
 # Logs
@@ -71,3 +72,5 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+CRAG.md

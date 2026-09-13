@@ -1,5 +1,14 @@
 import os
+from pathlib import Path
+from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
+
+# Load environment variables from the repo-root .env (COHERE_API_KEY, LLM_PROVIDER, etc.)
+# before Settings/ml_pipeline modules read them via os.getenv(). Without this, the app
+# silently runs on offline hash-embeddings + deterministic heuristics even when real
+# API keys are configured, because nothing else in the app ever reads the .env file.
+load_dotenv(Path(__file__).resolve().parents[3] / ".env")
+
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "IP-SAKTI Sahayak Backend"

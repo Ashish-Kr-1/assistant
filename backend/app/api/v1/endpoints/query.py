@@ -44,9 +44,15 @@ async def query_assistant(request: QueryRequest):
     if not query_text:
         raise HTTPException(status_code=400, detail="Query cannot be empty.")
 
-    jurisdiction = request.jurisdiction.lower()
-    if jurisdiction not in ["national", "international", "both"]:
-        raise HTTPException(status_code=400, detail="Jurisdiction must be 'national', 'international', or 'both'.")
+    raw_jurisdiction = request.jurisdiction.lower().strip()
+    if raw_jurisdiction in ["national", "india"]:
+        jurisdiction = "national"
+    elif raw_jurisdiction in ["international", "global"]:
+        jurisdiction = "international"
+    elif raw_jurisdiction in ["both", "all", "cross"]:
+        jurisdiction = "both"
+    else:
+        raise HTTPException(status_code=400, detail="Jurisdiction must be 'national'/'india', 'international', or 'both'.")
 
     # Audit log entry for DPDP Act 2023 compliance
     audit = DPDPLogger.log_query_audit(

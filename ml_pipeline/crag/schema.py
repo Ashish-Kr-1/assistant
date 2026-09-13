@@ -19,8 +19,22 @@ class ProvenanceStatus(str, Enum):
 class JurisdictionType(str, Enum):
     """Jurisdiction separation (Rule R4)."""
     NATIONAL = "national"
+    INDIA = "india"
     INTERNATIONAL = "international"
     BOTH = "both"
+
+    @classmethod
+    def from_str(cls, val: Any) -> "JurisdictionType":
+        if isinstance(val, cls):
+            return val
+        s = str(val).strip().lower()
+        if s in ("india", "national", "domestic"):
+            return cls.NATIONAL
+        if s in ("international", "global", "treaty"):
+            return cls.INTERNATIONAL
+        if s in ("both", "all", "cross"):
+            return cls.BOTH
+        return cls(s)
 
 
 class IPType(str, Enum):

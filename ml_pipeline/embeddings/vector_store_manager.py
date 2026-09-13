@@ -318,12 +318,17 @@ class VectorStoreManager:
         must_conditions = []
         must_not_conditions = []
 
-        # Rule R4: Jurisdiction isolation
+        # Rule R4: Jurisdiction isolation hard-filtered at database/retrieval level
         if jurisdiction and jurisdiction != JurisdictionType.BOTH:
+            target_vals = (
+                ["national", "india"]
+                if jurisdiction in (JurisdictionType.NATIONAL, JurisdictionType.INDIA)
+                else ["international"]
+            )
             must_conditions.append(
                 qmodels.FieldCondition(
                     key="jurisdiction",
-                    match=qmodels.MatchValue(value=jurisdiction.value)
+                    match=qmodels.MatchAny(any=target_vals)
                 )
             )
 

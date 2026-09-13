@@ -100,12 +100,12 @@ class CRAGPipeline:
         }
 
     def _node_fallback(self, state: CRAGState) -> Dict[str, Any]:
-        """Broadens search across both jurisdictions when initial results are ambiguous."""
-        logger.info("Triggering fallback retrieval with broadened jurisdiction scope...")
+        """Broadens search within the same jurisdiction scope when initial results are ambiguous (R4)."""
+        logger.info(f"Triggering fallback retrieval within jurisdiction scope [{state.jurisdiction}]...")
         fallback = self.vector_store.search(
             query=state.query,
-            jurisdiction=JurisdictionType.BOTH,
-            top_k=4,
+            jurisdiction=state.jurisdiction,
+            top_k=6,
             exclude_mock=True
         )
         # Deduplicate
@@ -200,6 +200,22 @@ class CRAGPipeline:
 
         return "abstain"
 
+    def _run_single_jurisdiction(
+        self,
+        query: str,
+        jurisdiction: JurisdictionType,
+        formulation_category: str = None
+    ) -> Dict[str, Any]:
+        """Executes the full CRAG graph strictly within a single isolated jurisdiction."""
+        initial_state = CRAGState(
+            query=query,
+            jurisdiction=jurisdiction,
+            formulation_category=formulation_category,
+            formulation_classified=bool(formulation_category)
+        )
+        final_state = self.graph.invoke(initial_state)
+        return final_state["final_output"]
+
     def run(
         self,
         query: str,
@@ -209,6 +225,10 @@ class CRAGPipeline:
     ) -> Dict[str, Any]:
         """
         Runs the pipeline for an end-user query with Rule R9 formulation classification gate.
+        Enforces Rule R4 (Jurisdiction Separation):
+        - When single jurisdiction ('national'/'india' or 'international'): executes single isolated retrieval and generation.
+        - When cross-jurisdiction ('both'): executes two separate retrieval + answer calls (one per jurisdiction)
+          and outputs two clearly labeled, unblended sections.
         """
         from ml_pipeline.agents.classifier_agent import FormulationClassifierAgent
 
@@ -234,11 +254,75 @@ class CRAGPipeline:
                     "disclaimer": OutputAssembler.MANDATORY_DISCLAIMER
                 }
 
-        initial_state = CRAGState(
+        target_jurisdiction = JurisdictionType.from_str(jurisdiction)
+
+        if target_jurisdiction == JurisdictionType.BOTH:
+            # Rule R4: Run two separate retrieval + answer calls, one per jurisdiction
+            res_nat = self._run_single_jurisdiction(
+                query=query,
+                jurisdiction=JurisdictionType.NATIONAL,
+                formulation_category=formulation_category
+            )
+            res_intl = self._run_single_jurisdiction(
+                query=query,
+                jurisdiction=JurisdictionType.INTERNATIONAL,
+                formulation_category=formulation_category
+            )
+
+            # Deduplicate and combine citations
+            seen_ids = set()
+            combined_citations = []
+            for c in res_nat.get("citations", []) + res_intl.get("citations", []):
+                cid = c.get("chunk_id")
+                if cid and cid not in seen_ids:
+                    seen_ids.add(cid)
+                    combined_citations.append(c)
+                elif not cid:
+                    combined_citations.append(c)
+
+            both_abstained = res_nat.get("is_abstained", False) and res_intl.get("is_abstained", False)
+
+            scores = []
+            if not res_nat.get("is_abstained"):
+                scores.append(res_nat.get("confidence_score", 0.0))
+            if not res_intl.get("is_abstained"):
+                scores.append(res_intl.get("confidence_score", 0.0))
+            avg_score = round(sum(scores) / max(len(scores), 1), 2)
+
+            # Separate clearly labeled sections
+            sections = []
+            if not res_nat.get("is_abstained"):
+                sections.append(f"### National (India) Legal Regime\n\n{res_nat.get('answer', '')}")
+            else:
+                sections.append(f"### National (India) Legal Regime\n\n*No verified Indian statutory source found for this query under safe abstention protocols.*")
+
+            if not res_intl.get("is_abstained"):
+                sections.append(f"### International Legal Regime\n\n{res_intl.get('answer', '')}")
+            else:
+                sections.append(f"### International Legal Regime\n\n*No verified international treaty source found for this query under safe abstention protocols.*")
+
+            composite_answer = "\n\n---\n\n".join(sections)
+
+            return {
+                "query": query,
+                "jurisdiction": "both",
+                "is_abstained": both_abstained,
+                "answer": composite_answer if not both_abstained else OutputAssembler.ABSTENTION_TEMPLATE,
+                "answers_by_regime": {
+                    "national": res_nat.get("answer", ""),
+                    "international": res_intl.get("answer", "")
+                },
+                "citations": combined_citations,
+                "confidence_score": avg_score if not both_abstained else 0.0,
+                "confidence_level": "HIGH" if avg_score >= 0.85 else ("MEDIUM" if avg_score >= 0.50 else "LOW"),
+                "escalate_to_human": both_abstained,
+                "escalation_reason": "Insufficient verified statutory sources across both jurisdictions." if both_abstained else None,
+                "abs_guidance": res_nat.get("abs_guidance") or res_intl.get("abs_guidance"),
+                "disclaimer": OutputAssembler.MANDATORY_DISCLAIMER
+            }
+
+        return self._run_single_jurisdiction(
             query=query,
-            jurisdiction=JurisdictionType(jurisdiction),
-            formulation_category=formulation_category,
-            formulation_classified=bool(formulation_category)
+            jurisdiction=target_jurisdiction,
+            formulation_category=formulation_category
         )
-        final_state = self.graph.invoke(initial_state)
-        return final_state["final_output"]

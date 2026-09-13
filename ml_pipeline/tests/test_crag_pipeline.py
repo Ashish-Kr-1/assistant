@@ -95,3 +95,55 @@ def test_mock_chunk_exclusion_rule_r7(seeded_pipeline):
 
     for chunk in results:
         assert chunk.status != ProvenanceStatus.MOCK_PENDING_ACCESS
+
+
+def test_database_level_jurisdiction_filtering(seeded_pipeline):
+    """
+    Verifies Rule R4: Jurisdiction filtering is strictly enforced at the database level.
+    No international chunks are returned when querying National/India,
+    and no Indian chunks are returned when querying International.
+    """
+    # 1. National search
+    nat_results = seeded_pipeline.vector_store.search(
+        query="disclosure requirements for genetic resources and patent application",
+        jurisdiction=JurisdictionType.NATIONAL,
+        top_k=5,
+        exclude_mock=True
+    )
+    assert len(nat_results) > 0
+    for chunk in nat_results:
+        assert chunk.jurisdiction in (JurisdictionType.NATIONAL, JurisdictionType.INDIA)
+        assert chunk.jurisdiction != JurisdictionType.INTERNATIONAL
+
+    # 2. International search
+    intl_results = seeded_pipeline.vector_store.search(
+        query="disclosure requirements for genetic resources and patent application",
+        jurisdiction=JurisdictionType.INTERNATIONAL,
+        top_k=5,
+        exclude_mock=True
+    )
+    assert len(intl_results) > 0
+    for chunk in intl_results:
+        assert chunk.jurisdiction == JurisdictionType.INTERNATIONAL
+        assert chunk.jurisdiction not in (JurisdictionType.NATIONAL, JurisdictionType.INDIA)
+
+
+def test_cross_jurisdiction_dual_pipeline_calls(seeded_pipeline):
+    """
+    Verifies Rule R4: For cross-jurisdiction ('both') queries, two independent retrieval
+    and answer generation calls are executed, producing two unblended, labeled sections.
+    """
+    result = seeded_pipeline.run(
+        query="What are the disclosure requirements for traditional genetic resources under Indian law and international treaties?",
+        jurisdiction="both",
+        skip_classification_gate=True
+    )
+
+    assert result["is_abstained"] is False
+    assert "### National (India) Legal Regime" in result["answer"]
+    assert "### International Legal Regime" in result["answer"]
+
+    # Verify citations from both regimes are present
+    cited_jurisdictions = {c.get("jurisdiction") for c in result["citations"]}
+    assert "national" in cited_jurisdictions
+    assert "international" in cited_jurisdictions

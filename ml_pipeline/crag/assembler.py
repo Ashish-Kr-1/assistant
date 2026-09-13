@@ -73,10 +73,11 @@ class OutputAssembler:
             confidence_level = ConfidenceLevel.LOW
             escalate_to_human = True
 
-        # Rule R4: Format answers by regime
+        # Rule R4: Format answers by regime (strictly unblended sections)
         formatted_sections = []
         for regime, text in answers_by_regime.items():
-            formatted_sections.append(f"### {regime.capitalize()} Legal Regime\n\n{text}")
+            label = "National (India)" if regime in ("national", "india") else "International"
+            formatted_sections.append(f"### {label} Legal Regime\n\n{text}")
         composite_answer = "\n\n---\n\n".join(formatted_sections)
 
         # Build citations list

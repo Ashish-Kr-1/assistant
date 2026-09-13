@@ -104,23 +104,20 @@ class CRAGState(BaseModel):
     Complete state passed across LangGraph nodes.
     """
     query: str
-    normalized_query: Optional[str] = None
     jurisdiction: JurisdictionType = JurisdictionType.NATIONAL
     formulation_category: Optional[str] = None
     formulation_classified: bool = False
-    
+
     # Retrieval & Grading
     retrieved_chunks: List[LegalChunk] = Field(default_factory=list)
     graded_chunks: List[GradedChunk] = Field(default_factory=list)
     correct_chunks: List[LegalChunk] = Field(default_factory=list)
     fallback_triggered: bool = False
-    fallback_chunks: List[LegalChunk] = Field(default_factory=list)
-    
+
     # Generation & Verification
     generated_answers: Dict[str, str] = Field(default_factory=dict)
     verifications: List[ClaimVerification] = Field(default_factory=list)
-    valid_citations: List[Dict[str, Any]] = Field(default_factory=list)
-    
+
     # Safe Abstention & Guardrails
     is_abstained: bool = False
     confidence_score: float = 0.0

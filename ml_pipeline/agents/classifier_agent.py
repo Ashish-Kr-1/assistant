@@ -1,16 +1,22 @@
 """
 Ayurvedic Formulation Classifier Agent (CRAG.md §3.2, Rule R9).
-Implements the interactive 5-tier classification decision engine:
+Implements the interactive 5-tier classification decision engine from free-text
+product descriptions, feeding the CRAG pipeline's R9 classification gate:
 1. Classical / Generic (First Schedule texts)
 2. Patent & Proprietary (P&P) Medicine
 3. Phytopharmaceutical Drug (Rule 122E)
 4. Ayurveda-Aahar (Nutraceutical)
 5. Cosmetic (Cosmetic Rules 2020)
+
+Statutory/IP/ABS metadata for each category lives in formulation_taxonomy.py —
+the same table backend/app/services/classification_service.py reads for the
+structured wizard, so the two entry points can't disagree on the underlying law.
 """
 
-import re
-from typing import Dict, Any, List, Optional
+from typing import Optional
 from pydantic import BaseModel, Field
+
+from ml_pipeline.agents.formulation_taxonomy import CATEGORY_METADATA
 
 
 class FormulationClassificationResult(BaseModel):
@@ -58,83 +64,54 @@ class FormulationClassifierAgent:
     ]
 
     @classmethod
+    def _result_for(cls, category_code: str, **overrides) -> FormulationClassificationResult:
+        """Builds a FormulationClassificationResult from the shared taxonomy table."""
+        meta = CATEGORY_METADATA[category_code]
+        return FormulationClassificationResult(
+            category=meta["text_category"],
+            confidence=meta["confidence"],
+            statutory_governance=meta["regulatory_framework"],
+            ip_bar_flag=meta["ip_posture"],
+            recommended_pathway=meta["recommended_pathway"],
+            **overrides,
+        )
+
+    @classmethod
     def classify(cls, description: str, text_reference: Optional[str] = None) -> FormulationClassificationResult:
         desc_lower = description.lower()
         ref_lower = (text_reference or "").lower()
 
         # Check Phytopharmaceutical
         if any(k in desc_lower for k in ["fraction", "phytopharmaceutical", "bioactive marker", "four markers", "purified fraction", "standardized fraction"]):
-            return FormulationClassificationResult(
-                category="phytopharmaceutical",
-                confidence=0.95,
-                statutory_governance="Drugs and Cosmetics Rules, 1945 — Rule 122E (CDSCO)",
-                ip_bar_flag=None,
-                recommended_pathway=(
-                    "Eligible for strong patent protection (composition of matter or process). "
-                    "Requires IND application, Phase I-III clinical trials under CDSCO."
-                )
-            )
+            return cls._result_for("PHYTOPHARMACEUTICAL")
 
         # Check Ayurveda Aahar / Nutraceutical
         if any(k in desc_lower for k in ["food", "supplement", "nutraceutical", "aahar", "dietary", "beverage", "candy", "cookie"]):
-            return FormulationClassificationResult(
-                category="ayurveda_aahar",
-                confidence=0.92,
-                statutory_governance="Food Safety and Standards (Ayurveda Aahar) Regulations, 2022 & October 2024 Compendium (71 Texts)",
-                ip_bar_flag="No therapeutic or disease claims permitted; trade dress, trademark, and design protection primary. Excludes Ayurvedic drugs, proprietary medicines, bhasmas, and cosmetics.",
-                recommended_pathway=(
-                    "FSSAI license with mandatory Ayurveda Aahar logo. "
-                    "Formulated strictly from the 71 authoritative texts. Prohibits synthetic vitamins, minerals, or amino acids."
-                )
-            )
+            return cls._result_for("AYURVEDA_AAHAR")
 
         # Check Cosmetic
         if any(k in desc_lower for k in ["cosmetic", "shampoo", "cream", "lotion", "serum", "hair oil", "skin glow", "soap"]):
-            return FormulationClassificationResult(
-                category="cosmetic",
-                confidence=0.90,
-                statutory_governance="Cosmetics Rules, 2020 under Drugs & Cosmetics Act",
-                ip_bar_flag="Formulation patent barred if simple herbal blend; trademark/design protection primary.",
-                recommended_pathway="Form 32 cosmetic manufacturing license; Bureau of Indian Standards (BIS) compliance."
-            )
+            return cls._result_for("COSMETIC")
 
         # Check Classical Generic
         is_classical = any(t in desc_lower or t in ref_lower for t in cls.CLASSICAL_TEXTS) or "classical" in desc_lower
         if is_classical or any(f in desc_lower for f in ["churna", "asava", "arishta", "taila", "bhasma", "kwatha", "avaleha", "vati", "guggulu", "triphala", "chyawanprash"]):
             if "modified" not in desc_lower and "novel ratio" not in desc_lower:
-                return FormulationClassificationResult(
-                    category="classical_generic",
-                    confidence=0.96,
-                    statutory_governance="Drugs and Cosmetics Act, 1940 — Section 3(a) & First Schedule Authoritative Texts",
-                    ip_bar_flag="Absolute Patent Bar under Section 3(p) of The Patents Act 1970 (Traditional Knowledge).",
-                    recommended_pathway=(
-                        "Manufacture under Classical AYUSH Drug License. Cannot be patented. "
-                        "Protected against biopiracy via CSIR-TKDL."
-                    )
-                )
+                return cls._result_for("CLASSICAL_MEDICINE")
 
         # Check Patent & Proprietary (P&P)
         if any(k in desc_lower for k in ["proprietary", "modified", "novel combination", "synergistic", "extract blend", "new ratio"]):
-            return FormulationClassificationResult(
-                category="patent_and_proprietary",
-                confidence=0.88,
-                statutory_governance="Drugs and Cosmetics Rules, 1945 — Rule 158B (AYUSH SLA)",
-                ip_bar_flag="Vulnerable to Section 3(d) (enhanced efficacy requirement) and Section 3(e) (mere admixture bar).",
-                recommended_pathway=(
-                    "Requires pilot clinical safety/toxicity data under Rule 158B. "
-                    "Patenting requires demonstrating unexpected synergistic efficacy beyond known textbook properties."
-                )
-            )
+            return cls._result_for("PROPRIETARY_MEDICINE")
 
         # Ambiguous case: Needs clarifying questions
         return FormulationClassificationResult(
             category="ambiguous",
             confidence=0.40,
             statutory_governance="Undetermined",
+            recommended_pathway="Clarification required before formal legal routing (Rule R9).",
             clarifying_question=(
                 "To determine your exact IP protection pathway and Section 3(p) risk: "
                 "Is this formulation drawn verbatim from an authoritative Ayurvedic text (e.g. Charaka Samhita), "
                 "or is it a novel proprietary combination/standardized extract?"
             ),
-            recommended_pathway="Clarification required before formal legal routing (Rule R9)."
         )

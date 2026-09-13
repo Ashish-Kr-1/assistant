@@ -128,18 +128,24 @@ Output JSON format strictly:
                 reason="Direct match for FSSAI Ayurveda Aahar regulations."
             )
 
-        # Keyword overlap check (excluding common English stopwords)
+        # Keyword overlap check (excluding common English stopwords AND generic
+        # legal boilerplate that co-occurs across nearly every statute/chunk —
+        # without filtering these, 3 unrelated chunks could all "match" on
+        # words like "section", "act", "person", inflating false CORRECT grades).
         STOPWORDS = {
             "under", "from", "with", "that", "this", "have", "about", "into", "what",
             "where", "when", "which", "their", "there", "these", "those", "been", "being",
             "does", "doing", "shall", "should", "would", "could", "also", "other", "such",
-            "ancient", "order", "state", "public", "central", "matter", "first", "second"
+            "ancient", "order", "state", "public", "central", "matter", "first", "second",
+            "section", "sections", "rule", "rules", "act", "acts", "provision", "provisions",
+            "person", "persons", "application", "applications", "government", "authority",
+            "shall", "clause", "clauses", "means", "including", "respect", "purpose", "purposes",
         }
         query_words = set(w for w in re.findall(r"\w{4,}", q_lower) if w not in STOPWORDS)
         chunk_words = set(w for w in re.findall(r"\w{4,}", chunk_text_lower) if w not in STOPWORDS)
         overlap = query_words.intersection(chunk_words)
 
-        if len(overlap) >= 3:
+        if len(overlap) >= 4:
             return GradedChunk(
                 chunk=chunk,
                 outcome=GradingOutcome.CORRECT,

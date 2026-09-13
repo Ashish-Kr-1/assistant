@@ -81,21 +81,32 @@ class CitationVerifier:
         key_terms = [w for w in re.findall(r"\w{4,}", claim_lower) if w in chunk_lower]
         term_ratio = len(key_terms) / max(len(re.findall(r"\w{4,}", claim_lower)), 1)
 
-        if section_matched and term_ratio >= 0.3:
+        # Thresholds deliberately conservative: this heuristic only runs when no
+        # LLM is available (Rule R3 has no NLI model to fall back on), so a false
+        # YES here means a hallucination-risk claim slips through unverified.
+        if section_matched and term_ratio >= 0.5:
             return ClaimVerification(
                 claim_text=claim,
                 cited_chunk_id=chunk.chunk_id,
                 entailment=EntailmentResult.YES,
-                confidence=0.95,
-                reason="Statutory section matched and substantial conceptual overlap verified."
+                confidence=0.90,
+                reason="Statutory section matched and majority of claim terms verified in source text."
             )
-        elif term_ratio >= 0.4:
+        elif section_matched and term_ratio >= 0.25:
             return ClaimVerification(
                 claim_text=claim,
                 cited_chunk_id=chunk.chunk_id,
                 entailment=EntailmentResult.PARTIAL,
-                confidence=0.70,
-                reason="Semantic overlap verified, though section reference requires cross-check."
+                confidence=0.60,
+                reason="Statutory section matched but only partial term overlap with source text."
+            )
+        elif term_ratio >= 0.5:
+            return ClaimVerification(
+                claim_text=claim,
+                cited_chunk_id=chunk.chunk_id,
+                entailment=EntailmentResult.PARTIAL,
+                confidence=0.55,
+                reason="Majority term overlap verified, though no matching section reference found."
             )
         else:
             return ClaimVerification(

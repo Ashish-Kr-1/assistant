@@ -546,41 +546,35 @@ def get_verified_sources() -> List[StatutorySource]:
             source_label="Indian Kanoon — Central Acts",
             extract_pattern=r"\(ii\)\s*if the applicant mentions a biological material.*?(?=\(4A\)|\(5\))",
         ),
-        StatutorySource(
-            chunk_id="patents_rules_2024_amendment",
-            url="https://ipindia.gov.in/writereaddata/Portal/Images/pdf/Patents_Amendment_Rules_2024.pdf",
-            source_type="static_verified",
-            act_name="The Patents (Amendment) Rules, 2024",
-            section_id="Patents Rules 2024 — Form 27 Triennial Working Statement & Rule 12 Foreign Filing Timeline",
-            jurisdiction=JurisdictionType.NATIONAL,
-            ip_type=IPType.PATENT,
-            effective_date="2024-03-15 (Notified in Gazette G.S.R. 212(E))",
-            source_label="IP India — Patents (Amendment) Rules 2024",
-            extract_pattern=None,
-        ),
-        StatutorySource(
-            chunk_id="bda_rules_2024_access_abs",
-            url="https://nbaindia.org/uploaded/pdf/Biological_Diversity_Rules_2024.pdf",
-            source_type="static_verified",
-            act_name="The Biological Diversity Rules, 2024",
-            section_id="Rules 16 & 17 — Prior Approval for Access to Biological Resources, ABS Formulas & AYUSH Exemptions",
-            jurisdiction=JurisdictionType.NATIONAL,
-            ip_type=IPType.BIODIVERSITY_ABS,
-            effective_date="2024-10-22 (Notified in Gazette)",
-            source_label="National Biodiversity Authority — Biological Diversity Rules 2024",
-            extract_pattern=None,
-        ),
+        # ── Patents (Amendment) Rules, 2024 & Biological Diversity Rules, 2024 ──
+        # NOT CURRENTLY INGESTED (as of 2026-09-13). Both IP India's and NBA's
+        # direct gazette PDF links are dead (404 / domain redirected to
+        # nbaindia.nic.in), and WIPO Lex's "legislation/details" pages for
+        # national legislation (unlike its older treaty "/text/" viewer) are
+        # rendered client-side by a JS SPA, so they return the app shell, not
+        # the document, to a plain HTTP fetch. Rather than hand-type the rule
+        # text as a placeholder (banned — CLAUDE.md "Zero text_override"), we
+        # omit these two sources until a real fetch path exists (e.g. via
+        # browser automation, or a working direct gazette/IP-India URL).
+        # See WIPO Lex IN195 (Patents Rules) / IN197 (BD Rules) for reference.
+
         StatutorySource(
             chunk_id="fssai_ayurveda_aahar_2022_reg_3",
-            url="https://fssai.gov.in/upload/uploadfiles/files/Gazette_Notification_Ayurveda_Aahar_06_05_2022.pdf",
-            source_type="static_verified",
-            act_name="Food Safety and Standards (Ayurveda Aahar) Regulations, 2022",
-            section_id="Regulation 3 & October 2024 Compendium — Standards, 71 Authoritative Texts & Drug/Cosmetic Exclusions",
+            url="https://agriexchange.apeda.gov.in/ImportRegulations/Indias%20FSSAI%20Notifies%20Final%20Standards%20for%20Ayurveda%20FoodsNew%20DelhiIndiaIN20220054.pdf",
+            source_type="pdf",
+            act_name="Food Safety and Standards (Ayurveda Aahara) Regulations, 2022",
+            section_id="Regulation 3 — 'Ayurveda Aahara' Definition, Schedule A Texts & Drug/Cosmetic Exclusions",
             jurisdiction=JurisdictionType.NATIONAL,
             ip_type=IPType.DRUG_REGULATORY,
-            effective_date="2022-05-06 (Regulations notified; Compendium Oct 2024)",
-            source_label="Food Safety and Standards Authority of India (FSSAI)",
-            extract_pattern=None,
+            effective_date="2022-05-06 (Notified in Gazette; implemented 2022-05-05)",
+            # NOTE: FSSAI's own gazette PDF link (fssai.gov.in/upload/notifications/...)
+            # now 404s — the site migrated to a JS SPA that serves the app shell for
+            # any path. This is a USDA Foreign Agricultural Service GAIN report
+            # (IN2022-0054) that directly quotes the regulation's operative
+            # definition and exclusion list from the official notification — a real,
+            # live, fetchable secondary source, honestly labeled as such below.
+            source_label="USDA Foreign Agricultural Service — GAIN Report IN2022-0054 (quoting FSSAI Notification F.No. Stds/SP-05/A-1.Y(01), Ayurveda Aahara Regulations 2022)",
+            extract_pattern=r"Background:\s*(.*?)(?=What Makes a Food an Ayurveda Aahara Food\?)",
         ),
     ]
 
@@ -736,34 +730,6 @@ class RealLegalScraper:
             logger.warning(f"    ✗ WIPO PDF fetch failed: {url} — {e}")
             return None
 
-    def _get_static_verified_text(self, chunk_id: str) -> Optional[str]:
-        STATUTORY_REGISTRY = {
-            "patents_rules_2024_amendment": (
-                "The Patents (Amendment) Rules, 2024 (Notified on 15th March 2024, Ministry of Commerce and Industry, DPIIT, G.S.R. 212(E)):\n"
-                "1. Rule 12(1A) & (2) — Foreign Filing Details (Section 8): The applicant shall file the statement of foreign applications "
-                "in Form 3 within three months from the date of issuance of the first statement of objections (FER), replacing the prior requirement of six months from every foreign filing.\n"
-                "2. Rule 131(2) — Working of Patented Inventions (Section 146): The statement regarding the working of a patented invention on a commercial "
-                "scale in India in Form 27 shall be furnished once in respect of every period of three financial years, commencing from the financial year next to that in which the patent was granted.\n"
-                "3. Rule 24B & 24C — Request for examination expedited and reduced official fees for educational institutions and startups.\n"
-                "4. Rule 29A — Grace period under Section 31: Provides an explicit framework and Form 31 for availing one-year grace period post-disclosure."
-            ),
-            "bda_rules_2024_access_abs": (
-                "The Biological Diversity Rules, 2024 (Notified on 22nd October 2024 under Biological Diversity Act 2002 as amended 2023):\n"
-                "1. Rule 16 & 17 — Prior Approval for Access to Biological Resources and Associated Knowledge: Every person covered under section 3(2) who "
-                "intends to access biological resources occurring in India or associated traditional knowledge for commercial utilization or bio-survey shall submit an application to the National Biodiversity Authority (NBA) in Form I.\n"
-                "2. Benefit Sharing Slabs: Determination of fair and equitable benefit sharing shall range between 0.1% and 0.5% of the annual gross ex-factory sale of the commercial product, or 1% to 3% of the purchase price of the biological resource.\n"
-                "3. Registered AYUSH Practitioners Exemption: Local communities, cultivators of medicinal plants, and registered Indian AYUSH practitioners (Vaidyas, Hakims, Siddha doctors) are exempted from ABS payment under Section 7 and 24, provided a valid Certificate of Origin is maintained."
-            ),
-            "fssai_ayurveda_aahar_2022_reg_3": (
-                "Food Safety and Standards (Ayurveda Aahar) Regulations, 2022 and October 2024 Compendium:\n"
-                "1. Regulation 3 — Definition & Scope: 'Ayurveda Aahar' means food prepared in accordance with the recipes or ingredients or processes described in the 71 authoritative books of Ayurveda listed in First Schedule to Drugs and Cosmetics Act 1940 and the FSSAI October 2024 Compendium.\n"
-                "2. Statutory Exclusions: Ayurveda Aahar shall not include Ayurvedic drugs, patent and proprietary medicines, classical bhasmas or pishtis intended for clinical therapy, or Ayurvedic cosmetics.\n"
-                "3. Prohibitions: No synthetic vitamins, minerals, amino acids, or isolated chemical additives may be added. No therapeutic claims or disease cure/mitigation claims are permitted.\n"
-                "4. Logo & Packaging: Every package of Ayurveda Aahar shall prominently display the dedicated green Ayurveda Aahar logo and mandatory labeling declarations."
-            ),
-        }
-        return STATUTORY_REGISTRY.get(chunk_id)
-
     def scrape_source(self, source: StatutorySource) -> Optional[LegalChunk]:
         """Fetches document, extracts section, and constructs a LegalChunk."""
         if source.source_type == "kanoon":
@@ -776,8 +742,6 @@ class RealLegalScraper:
             full_text = self._fetch_wipo_html_text(source.url)
         elif source.source_type == "wipo_signed_pdf":
             full_text = self._fetch_wipo_signed_pdf_text(source.url, source.chunk_id)
-        elif source.source_type == "static_verified":
-            full_text = self._get_static_verified_text(source.chunk_id)
         else:
             logger.warning(f"Unknown source type: {source.source_type}")
             return None

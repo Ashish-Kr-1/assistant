@@ -67,6 +67,12 @@ async def query_assistant(request: QueryRequest):
 
     # ── Rule R6: Paid-source consent check ──────────────────────────────────
     # If any citation in the result is from a paid/gated source, enforce per-query consent.
+    # NOTE: the live corpus (scripts/seed_corpus.py) currently contains zero
+    # VERIFIED_PAID sources — everything ingested today is VERIFIED_PUBLIC or
+    # MOCK_PENDING_ACCESS (TKDL) — so this branch is dormant until Phase 3
+    # paid-source ingestion (e.g. Manupatra case law) is added. It is unit-
+    # and integration-tested directly in backend/tests/test_r6_consent_guard.py
+    # so the gate is proven to work even though nothing triggers it yet.
     paid_citations = [
         c for c in crag_result.get("citations", [])
         if c.get("status") == "verified_paid"

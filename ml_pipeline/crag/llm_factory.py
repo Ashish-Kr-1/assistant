@@ -30,7 +30,7 @@ def get_llm(temperature: float = 0.0, preferred_model: Optional[str] = None) -> 
             return None
         try:
             from langchain_cohere import ChatCohere
-            model = preferred_model or os.getenv("COHERE_MODEL", "command-r")
+            model = preferred_model or os.getenv("COHERE_MODEL", "command-a-03-2025")
             logger.info(f"Initializing Cohere LLM: {model}")
             return ChatCohere(
                 model=model,

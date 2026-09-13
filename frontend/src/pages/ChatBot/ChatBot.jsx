@@ -4,6 +4,7 @@ import Sidebar from "../../components/Sidebar/Sidebar"
 import ChatTopbar from "../../components/ChatTopbar/ChatTopbar"
 import ChatMessages from "../../components/ChatMessages/ChatMessages"
 import Composer from "../../components/Composer/Composer"
+import api from "../../api/axiosInstance"
 
 const currentUser = {
   name: "Ananya Verma",
@@ -43,13 +44,30 @@ const initialMessages = [
   },
 ]
 
-const UNDER_CONSTRUCTION_REPLY = "I am under construction, feel free to ask anything!"
+const GENERIC_ERROR_REPLY =
+  "I couldn't reach the IP-SAKTI Sahayak backend just now. Make sure the FastAPI server is running on port 8000, then try again."
 
-const UNDER_CONSTRUCTION_FOLLOWUPS = [
-  "What documents are needed for an ABS approval?",
-  "How is a formulation classified under Indian law?",
-  "What's the difference between National and International guidance here?",
-]
+function confidenceLabel(level) {
+  switch ((level || "").toUpperCase()) {
+    case "HIGH":
+      return "High confidence"
+    case "MEDIUM":
+      return "Medium confidence"
+    case "LOW":
+      return "Low confidence"
+    default:
+      return null
+  }
+}
+
+function citationLabels(citations) {
+  if (!Array.isArray(citations) || citations.length === 0) return undefined
+  return citations.map((c) => {
+    const statute = c.statute || c.treaty || c.act_name || "Source"
+    const locator = c.section || c.rule || c.article || c.section_id || ""
+    return locator ? `${statute}, ${locator}` : statute
+  })
+}
 
 const SIDEBAR_MIN_WIDTH = 220
 const SIDEBAR_MAX_WIDTH = 680
@@ -65,15 +83,16 @@ export default function ChatBot() {
   const [isTyping, setIsTyping] = useState(false)
   const [theme, setTheme] = useState("light")
   const scrollRef = useRef(null)
-  const replyTimeoutRef = useRef(null)
+  const isMountedRef = useRef(true)
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" })
   }, [messages, isTyping])
 
   useEffect(() => {
+    isMountedRef.current = true
     return () => {
-      if (replyTimeoutRef.current) clearTimeout(replyTimeoutRef.current)
+      isMountedRef.current = false
     }
   }, [])
 
@@ -105,19 +124,42 @@ export default function ChatBot() {
     setIsResizingSidebar(true)
   }
 
-  function handleSend(overrideText) {
+  async function handleSend(overrideText) {
     const text = (overrideText ?? draft).trim()
     if (!text || isTyping) return
     setMessages((prev) => [...prev, { id: `u-${Date.now()}`, role: "user", text }])
     setDraft("")
     setIsTyping(true)
-    replyTimeoutRef.current = setTimeout(() => {
+
+    try {
+      const { data } = await api.post("/query", {
+        query: text,
+        jurisdiction,
+        dpdp_consent: true,
+      })
+
+      if (!isMountedRef.current) return
+
       setMessages((prev) => [
         ...prev,
-        { id: `a-${Date.now()}`, role: "assistant", text: UNDER_CONSTRUCTION_REPLY, followUps: UNDER_CONSTRUCTION_FOLLOWUPS },
+        {
+          id: `a-${Date.now()}`,
+          role: "assistant",
+          text: data.answer,
+          citations: citationLabels(data.citations),
+          confidence: confidenceLabel(data.confidence_level),
+          escalate: data.escalate_to_human,
+        },
       ])
-      setIsTyping(false)
-    }, 5000)
+    } catch (err) {
+      if (!isMountedRef.current) return
+      setMessages((prev) => [
+        ...prev,
+        { id: `a-${Date.now()}`, role: "assistant", text: err.message || GENERIC_ERROR_REPLY },
+      ])
+    } finally {
+      if (isMountedRef.current) setIsTyping(false)
+    }
   }
 
   function handleKeyDown(e) {

@@ -1,0 +1,26 @@
+.bar {
+  position: relative;
+  width: 16px;
+  height: 2px;
+  background: var(--accent-ochre-deep);
+  border-radius: 2px;
+}
+
+.bar::before,
+.bar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 16px;
+  height: 2px;
+  background: var(--accent-ochre-deep);
+  border-radius: 2px;
+}
+
+.bar::before {
+  top: -5px;
+}
+
+.bar::after {
+  top: 5px;
+}

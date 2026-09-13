@@ -1,65 +1,140 @@
-from fastapi import APIRouter, HTTPException, Depends
+import logging
+from fastapi import APIRouter, HTTPException
 from app.schemas.query_schema import QueryRequest, QueryResponse, CitationSchema
 from app.core.dpdp_logger import DPDPLogger
 from app.core.config import settings
-from app.services.citation_service import StatutoryCitationValidator
+from app.core.r6_consent_guard import R6ConsentGuard
+from ml_pipeline.crag.graph import CRAGPipeline
+from ml_pipeline.embeddings.vector_store_manager import VectorStoreManager
+from scripts.seed_corpus import get_foundational_corpus
 
+logger = logging.getLogger("query_api")
 router = APIRouter()
+
+# Global cached CRAG pipeline instance
+_pipeline_instance: CRAGPipeline = None
+
+
+def get_crag_pipeline() -> CRAGPipeline:
+    global _pipeline_instance
+    if _pipeline_instance is None:
+        logger.info("Initializing CRAG pipeline for FastAPI backend...")
+        manager = VectorStoreManager()
+        corpus = get_foundational_corpus()
+        manager.index_chunks(corpus)
+        _pipeline_instance = CRAGPipeline(vector_store=manager)
+    return _pipeline_instance
+
 
 @router.post("/query", response_model=QueryResponse)
 async def query_assistant(request: QueryRequest):
     """
-    RAG Query Endpoint for IP-SAKTI Sahayak.
-    Supports National (India) vs International jurisdiction toggles and returns mandatory citations.
+    Corrective RAG (CRAG) Endpoint for IP-SAKTI Sahayak (SIH PS045).
+    Enforces rules R1-R10:
+    - R1: Safe abstention if sources grade INCORRECT
+    - R2 & R3: Citation entailment and orphan claim removal
+    - R4: Strict National vs International regime isolation
+    - R5: Non-removable legal disclaimer
+    - R7: Mock chunk exclusion
+    - R8: Mandatory confidence indicator & escalation trigger
+    - R9: Formulation classification gate
+    - R10: Statutory version stamping
     """
     query_text = request.query.strip()
     if not query_text:
         raise HTTPException(status_code=400, detail="Query cannot be empty.")
 
-    jurisdiction = request.jurisdiction.lower()
-    if jurisdiction not in ["national", "international"]:
-        raise HTTPException(status_code=400, detail="Jurisdiction must be 'national' or 'international'.")
+    raw_jurisdiction = request.jurisdiction.lower().strip()
+    if raw_jurisdiction in ["national", "india"]:
+        jurisdiction = "national"
+    elif raw_jurisdiction in ["international", "global"]:
+        jurisdiction = "international"
+    elif raw_jurisdiction in ["both", "all", "cross"]:
+        jurisdiction = "both"
+    else:
+        raise HTTPException(status_code=400, detail="Jurisdiction must be 'national'/'india', 'international', or 'both'.")
 
     # Audit log entry for DPDP Act 2023 compliance
     audit = DPDPLogger.log_query_audit(
         user_ref="anonymous_user",
         jurisdiction=jurisdiction,
-        query_type="IPR_RAG_SEARCH",
-        citations=["PATENTS_ACT_SEC_3P" if jurisdiction == "national" else "WIPO_GRATK_2024_ART_3"],
+        query_type="CRAG_SEARCH",
+        citations=[],
         consent_given=request.dpdp_consent
     )
 
-    # Route logic based on jurisdiction
-    if jurisdiction == "national":
-        answer = (
-            "Under Indian Law, Ayurvedic formulations face distinct IP and regulatory pathways depending on their classification:\n\n"
-            "1. **Traditional Knowledge & Section 3(p)**: Classical Ayurvedic formulations drawn directly from First-Schedule authoritative texts "
-            "are barred from patenting under Section 3(p) of The Patents Act 1970 to prevent biopiracy. These are defended internationally via the Traditional Knowledge Digital Library (TKDL).\n\n"
-            "2. **Patent & Proprietary Medicines**: Novel combinations or modified ratios may achieve patent protection if they demonstrate a non-obvious inventive step beyond known herbal properties (Sec 3(d)/3(e) hurdles).\n\n"
-            "3. **Biological Diversity Act 2023 Compliance**: Commercial utilization requires notification to the State Biodiversity Board (SBB) or National Biodiversity Authority (NBA). "
-            "Registered AYUSH practitioners are exempted from monetary ABS payments under the 2023 Amendment."
-        )
-        citation_keys = ["PATENTS_ACT_SEC_3P", "PATENTS_RULES_2024_RULE_24", "BDA_2023_SEC_3"]
-        confidence = 0.96
-    else:
-        answer = (
-            "Under International Law, protection of Ayurvedic traditional knowledge and genetic resources is governed by multilateral treaties:\n\n"
-            "1. **WIPO GRATK Treaty (2024)**: Article 3 mandates that patent applicants in member states must disclose the origin of genetic resources and associated traditional knowledge if the claimed invention is directly based on them.\n\n"
-            "2. **Convention on Biological Diversity (CBD) & Nagoya Protocol**: Requires Prior Informed Consent (PIC) and Mutually Agreed Terms (MAT) for access to genetic resources, alongside fair and equitable Access-and-Benefit-Sharing (ABS).\n\n"
-            "3. **TRIPS & PCT Systems**: Patent Cooperation Treaty (PCT) applications allow international filing, but traditional knowledge claims are benchmarked against global prior-art databases including TKDL."
-        )
-        citation_keys = ["WIPO_GRATK_2024_ART_3", "NAGOYA_PROTO_ART_5"]
-        confidence = 0.94
+    pipeline = get_crag_pipeline()
+    crag_result = pipeline.run(
+        query=query_text,
+        jurisdiction=jurisdiction,
+        skip_classification_gate=request.skip_classification_gate,
+        formulation_category=request.formulation_category
+    )
 
-    raw_citations = StatutoryCitationValidator.enrich_response_citations(answer, citation_keys)
-    citations = [CitationSchema(**c) for c in raw_citations]
+    # ── Rule R6: Paid-source consent check ──────────────────────────────────
+    # If any citation in the result is from a paid/gated source, enforce per-query consent.
+    # NOTE: the live corpus (scripts/seed_corpus.py) currently contains zero
+    # VERIFIED_PAID sources — everything ingested today is VERIFIED_PUBLIC or
+    # MOCK_PENDING_ACCESS (TKDL) — so this branch is dormant until Phase 3
+    # paid-source ingestion (e.g. Manupatra case law) is added. It is unit-
+    # and integration-tested directly in backend/tests/test_r6_consent_guard.py
+    # so the gate is proven to work even though nothing triggers it yet.
+    paid_citations = [
+        c for c in crag_result.get("citations", [])
+        if c.get("status") == "verified_paid"
+    ]
+    r6_consent_records = []
+    if paid_citations:
+        for source_key in {c.get("source_key", "indiakanoon") for c in paid_citations}:
+            access_granted, r6_record = R6ConsentGuard.enforce(
+                query=query_text,
+                source_key=source_key,
+                user_ref=audit.get("anonymized_user_ref", "anon"),
+                paid_source_consent=request.paid_source_consent
+            )
+            r6_consent_records.append(r6_record.model_dump())
+            if not access_granted:
+                # Strip paid citations from result per R6
+                crag_result["citations"] = [
+                    c for c in crag_result.get("citations", [])
+                    if c.get("status") != "verified_paid"
+                ]
+                consent_prompt = R6ConsentGuard.build_consent_prompt(source_key)
+                if consent_prompt and not crag_result.get("is_abstained"):
+                    crag_result["answer"] = (
+                        consent_prompt + "\n\n"
+                        "_Re-submit with `paid_source_consent: true` to include paid-source citations._"
+                    )
+                    crag_result["is_abstained"] = False
+    # ────────────────────────────────────────────────────────────────────────
+
+    # Transform citations to CitationSchema
+    api_citations = []
+    for c in crag_result.get("citations", []):
+        api_citations.append(
+            CitationSchema(
+                statute=c.get("act_name"),
+                section=c.get("section_id"),
+                jurisdiction=c.get("jurisdiction", jurisdiction),
+                official_url=c.get("official_url") or "",
+                title=f"{c.get('act_name')} — {c.get('section_id')}",
+                summary=f"Effective/Amended: {c.get('effective_date', 'Current')}",
+                chunk_id=c.get("chunk_id"),
+                effective_date=c.get("effective_date")
+            )
+        )
 
     return QueryResponse(
         query=request.query,
         jurisdiction=jurisdiction,
-        answer=answer,
-        confidence_score=confidence,
-        citations=citations,
-        disclaimer=settings.LEGAL_DISCLAIMER_TEXT,
+        answer=crag_result.get("answer", ""),
+        confidence_score=crag_result.get("confidence_score", 0.0),
+        confidence_level=crag_result.get("confidence_level", "LOW"),
+        citations=api_citations,
+        formulation_category=request.formulation_category,
+        is_abstained=crag_result.get("is_abstained", False),
+        escalate_to_human=crag_result.get("escalate_to_human", False),
+        abs_guidance=crag_result.get("abs_guidance"),
+        disclaimer=crag_result.get("disclaimer") or settings.LEGAL_DISCLAIMER_TEXT,
         anonymized_audit_ref=audit["anonymized_user_ref"]
     )

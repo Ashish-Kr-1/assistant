@@ -45,3 +45,6 @@ postgres_data/
 *.swo
 .DS_Store
 Thumbs.db
+
+#Miscelleneous
+CRAG.md

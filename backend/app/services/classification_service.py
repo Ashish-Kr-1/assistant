@@ -33,11 +33,11 @@ class AyurvedicFormulationClassifier:
         },
         "AYURVEDA_AAHAR": {
             "name": "Ayurveda-Aahar / Food Supplement",
-            "description": "Food products prepared in accordance with recipes or ingredients specified in authoritative Ayurvedic books.",
-            "regulatory_framework": "FSSAI (Ayurveda Aahar) Regulations 2022",
-            "ip_posture": "Process/recipe patents rare (Sec 3(e) admixture bar). GI and Trademark protection recommended.",
-            "abs_posture": "Exempted if biological resource is traded as a commodity, but commercial utilization of wild species requires NBA clearance.",
-            "required_evidence": "Compliance with FSSAI safety, labeling, and non-medicinal therapeutic claims."
+            "description": "Food products prepared strictly in accordance with recipes or ingredients specified in the 71 authoritative Ayurvedic books (FSSAI October 2024 Compendium). Excludes Ayurvedic drugs, proprietary medicines, bhasmas, and cosmetics.",
+            "regulatory_framework": "Food Safety and Standards (Ayurveda Aahar) Regulations, 2022 & October 2024 Compendium",
+            "ip_posture": "Process/recipe patents rare (Sec 3(e) admixture bar). Trademark and design protection primary; therapeutic/disease claims strictly prohibited.",
+            "abs_posture": "Exempted if biological resource is normally traded as a commodity (NTAC), but commercial utilization of wild species requires NBA/SBB clearance.",
+            "required_evidence": "FSSAI license with dedicated Ayurveda Aahar logo. Free from synthetic vitamins, minerals, or amino acids."
         },
         "COSMETIC": {
             "name": "Ayurvedic Cosmetic",

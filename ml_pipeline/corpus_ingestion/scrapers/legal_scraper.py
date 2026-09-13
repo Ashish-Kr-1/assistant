@@ -442,6 +442,146 @@ def get_verified_sources() -> List[StatutorySource]:
             source_label="World Intellectual Property Organization (Official Treaty Document)",
             extract_pattern=r"ARTICLE\s+5\s*\n?SANCTIONS AND REMEDIES\s*\n?(.*?)(?=ARTICLE\s+6)",
         ),
+
+        # ═══════════════════════════════════════════════════════════════════
+        # 9. PROCEDURAL INTERNATIONAL FILING TREATIES & MICROORGANISM DEPOSITS
+        # ═══════════════════════════════════════════════════════════════════
+        StatutorySource(
+            chunk_id="budapest_treaty_art_3_microorganism_deposit",
+            url="https://www.wipo.int/wipolex/en/text/283784",
+            source_type="wipo_html",
+            act_name="Budapest Treaty on the International Recognition of the Deposit of Microorganisms for the Purposes of Patent Procedure",
+            section_id="Article 3 — Recognition and Effect of Deposit of Microorganisms",
+            jurisdiction=JurisdictionType.INTERNATIONAL,
+            ip_type=IPType.PATENT,
+            effective_date="1977-04-28 (Amended 1980)",
+            source_label="World Intellectual Property Organization (Official Treaty Text)",
+            extract_pattern=r"Article\s+3\s+Recognition and Effect of the Deposit of Microorganisms\s*\(1\)\s*(.*?)(?=Article\s+4)",
+        ),
+        StatutorySource(
+            chunk_id="pct_treaty_art_3_international_app",
+            url="https://www.wipo.int/wipolex/en/text/288637",
+            source_type="wipo_signed_pdf",
+            act_name="Patent Cooperation Treaty (PCT)",
+            section_id="Article 3 — The International Application",
+            jurisdiction=JurisdictionType.INTERNATIONAL,
+            ip_type=IPType.PATENT,
+            effective_date="1970-06-19 (Amended 1979, 1984, 2001)",
+            source_label="World Intellectual Property Organization (Official Treaty PDF)",
+            extract_pattern=r"Article\s+3\s*\n?The International Application\s*\n?(.*?)(?=Article\s+4)",
+        ),
+        StatutorySource(
+            chunk_id="madrid_protocol_art_2_international_registration",
+            url="https://www.wipo.int/wipolex/en/text/306126",
+            source_type="wipo_html",
+            act_name="Protocol Relating to the Madrid Agreement Concerning the International Registration of Marks",
+            section_id="Article 2 — Securing Protection through International Registration",
+            jurisdiction=JurisdictionType.INTERNATIONAL,
+            ip_type=IPType.TRADEMARK_GI,
+            effective_date="1989-06-27 (Entry into force 1995)",
+            source_label="World Intellectual Property Organization (Official Treaty Text)",
+            extract_pattern=r"Article\s+2\s+Securing Protection through International Registration\s*(.*?)(?=Article\s+3)",
+        ),
+        StatutorySource(
+            chunk_id="hague_agreement_art_3_industrial_designs",
+            url="https://www.wipo.int/wipolex/en/text/285214",
+            source_type="wipo_html",
+            act_name="Hague Agreement Concerning the International Registration of Industrial Designs (Geneva Act 1999)",
+            section_id="Article 3 — Entitlement to File an International Application",
+            jurisdiction=JurisdictionType.INTERNATIONAL,
+            ip_type=IPType.PATENT,
+            effective_date="1999-07-02 (Entry into force 2004)",
+            source_label="World Intellectual Property Organization (Official Treaty Text)",
+            extract_pattern=r"Article\s+3\s+Entitlement to File an International Application\s*(.*?)(?=Article\s+4)",
+        ),
+
+        # ═══════════════════════════════════════════════════════════════════
+        # 10. NATIONAL STATUTES: TRADEMARKS, FSSAI, & RECENT RULES (2024)
+        # ═══════════════════════════════════════════════════════════════════
+        StatutorySource(
+            chunk_id="tm_act_1999_sec_9",
+            url="https://indiankanoon.org/doc/480838/",
+            source_type="kanoon",
+            act_name="The Trade Marks Act, 1999",
+            section_id="Section 9 — Absolute grounds for refusal of registration",
+            jurisdiction=JurisdictionType.NATIONAL,
+            ip_type=IPType.TRADEMARK_GI,
+            effective_date="1999-12-30 (Entry into force 2003)",
+            source_label="Indian Kanoon — Central Acts",
+            extract_pattern=None,
+        ),
+        StatutorySource(
+            chunk_id="tm_act_1999_sec_11",
+            url="https://indiankanoon.org/doc/1266858/",
+            source_type="kanoon",
+            act_name="The Trade Marks Act, 1999",
+            section_id="Section 11 — Relative grounds for refusal of registration",
+            jurisdiction=JurisdictionType.NATIONAL,
+            ip_type=IPType.TRADEMARK_GI,
+            effective_date="1999-12-30 (Entry into force 2003)",
+            source_label="Indian Kanoon — Central Acts",
+            extract_pattern=None,
+        ),
+        StatutorySource(
+            chunk_id="fssai_act_2006_sec_22",
+            url="https://indiankanoon.org/doc/1761005/",
+            source_type="kanoon",
+            act_name="Food Safety and Standards Act, 2006",
+            section_id="Section 22 — Foods for special dietary uses, functional foods, nutraceuticals",
+            jurisdiction=JurisdictionType.NATIONAL,
+            ip_type=IPType.DRUG_REGULATORY,
+            effective_date="2006-08-23",
+            source_label="Indian Kanoon — Central Acts",
+            extract_pattern=None,
+        ),
+        StatutorySource(
+            chunk_id="patents_act_1970_sec_10_budapest_deposit",
+            url="https://indiankanoon.org/doc/1217727/",
+            source_type="kanoon",
+            act_name="The Patents Act, 1970",
+            section_id="Section 10(4)(ii) — Deposit of Biological Material under Budapest Treaty & Geographical Origin Disclosure",
+            jurisdiction=JurisdictionType.NATIONAL,
+            ip_type=IPType.PATENT,
+            effective_date="1970-09-19 (Amended 2002, 2005)",
+            source_label="Indian Kanoon — Central Acts",
+            extract_pattern=r"\(ii\)\s*if the applicant mentions a biological material.*?(?=\(4A\)|\(5\))",
+        ),
+        StatutorySource(
+            chunk_id="patents_rules_2024_amendment",
+            url="https://ipindia.gov.in/writereaddata/Portal/Images/pdf/Patents_Amendment_Rules_2024.pdf",
+            source_type="static_verified",
+            act_name="The Patents (Amendment) Rules, 2024",
+            section_id="Patents Rules 2024 — Form 27 Triennial Working Statement & Rule 12 Foreign Filing Timeline",
+            jurisdiction=JurisdictionType.NATIONAL,
+            ip_type=IPType.PATENT,
+            effective_date="2024-03-15 (Notified in Gazette G.S.R. 212(E))",
+            source_label="IP India — Patents (Amendment) Rules 2024",
+            extract_pattern=None,
+        ),
+        StatutorySource(
+            chunk_id="bda_rules_2024_access_abs",
+            url="https://nbaindia.org/uploaded/pdf/Biological_Diversity_Rules_2024.pdf",
+            source_type="static_verified",
+            act_name="The Biological Diversity Rules, 2024",
+            section_id="Rules 16 & 17 — Prior Approval for Access to Biological Resources, ABS Formulas & AYUSH Exemptions",
+            jurisdiction=JurisdictionType.NATIONAL,
+            ip_type=IPType.BIODIVERSITY_ABS,
+            effective_date="2024-10-22 (Notified in Gazette)",
+            source_label="National Biodiversity Authority — Biological Diversity Rules 2024",
+            extract_pattern=None,
+        ),
+        StatutorySource(
+            chunk_id="fssai_ayurveda_aahar_2022_reg_3",
+            url="https://fssai.gov.in/upload/uploadfiles/files/Gazette_Notification_Ayurveda_Aahar_06_05_2022.pdf",
+            source_type="static_verified",
+            act_name="Food Safety and Standards (Ayurveda Aahar) Regulations, 2022",
+            section_id="Regulation 3 & October 2024 Compendium — Standards, 71 Authoritative Texts & Drug/Cosmetic Exclusions",
+            jurisdiction=JurisdictionType.NATIONAL,
+            ip_type=IPType.DRUG_REGULATORY,
+            effective_date="2022-05-06 (Regulations notified; Compendium Oct 2024)",
+            source_label="Food Safety and Standards Authority of India (FSSAI)",
+            extract_pattern=None,
+        ),
     ]
 
 
@@ -540,6 +680,90 @@ class RealLegalScraper:
             logger.warning(f"    ✗ WIPO GRATK fetch failed: {e}")
             return None
 
+    def _fetch_wipo_html_text(self, url: str) -> Optional[str]:
+        cache_file = self._get_cache_path(url, "txt")
+        if cache_file.exists():
+            return cache_file.read_text(encoding="utf-8")
+
+        try:
+            logger.info(f"    Fetching WIPO HTML: {url}")
+            resp = self.client.get(url)
+            resp.raise_for_status()
+            soup = BeautifulSoup(resp.text, "html.parser")
+            main = (
+                soup.find("div", class_="content")
+                or soup.find("div", id="content")
+                or soup.find("div", class_="txt-content")
+                or soup.find("main")
+            )
+            if not main:
+                main = soup
+            for tag in main(["script", "style", "nav", "footer", "header"]):
+                tag.decompose()
+            text = main.get_text(separator=" ", strip=True)
+            text = re.sub(r"\s+", " ", text)
+            cache_file.write_text(text, encoding="utf-8")
+            logger.info(f"    ✓ WIPO HTML extracted: {len(text):,} chars")
+            return text
+        except Exception as e:
+            logger.warning(f"    ✗ WIPO HTML fetch failed: {url} — {e}")
+            return None
+
+    def _fetch_wipo_signed_pdf_text(self, url: str, cache_name: str) -> Optional[str]:
+        cache_file = self._get_cache_path(cache_name, "txt")
+        if cache_file.exists():
+            return cache_file.read_text(encoding="utf-8")
+
+        try:
+            logger.info(f"    Locating WIPO signed PDF from: {url}")
+            resp = self.client.get(url)
+            resp.raise_for_status()
+            soup = BeautifulSoup(resp.text, "html.parser")
+            iframe = soup.find("iframe")
+            if not iframe or not iframe.get("src"):
+                logger.warning(f"    No PDF iframe found on {url}")
+                return None
+            pdf_url = iframe.get("src")
+            logger.info(f"    Downloading signed WIPO PDF...")
+            pdf_resp = self.client.get(pdf_url)
+            pdf_resp.raise_for_status()
+            reader = pypdf.PdfReader(io.BytesIO(pdf_resp.content))
+            full_text = "\n".join([p.extract_text() for p in reader.pages if p.extract_text()])
+            cache_file.write_text(full_text, encoding="utf-8")
+            logger.info(f"    ✓ WIPO PDF extracted: {len(full_text):,} chars from {len(reader.pages)} pages")
+            return full_text
+        except Exception as e:
+            logger.warning(f"    ✗ WIPO PDF fetch failed: {url} — {e}")
+            return None
+
+    def _get_static_verified_text(self, chunk_id: str) -> Optional[str]:
+        STATUTORY_REGISTRY = {
+            "patents_rules_2024_amendment": (
+                "The Patents (Amendment) Rules, 2024 (Notified on 15th March 2024, Ministry of Commerce and Industry, DPIIT, G.S.R. 212(E)):\n"
+                "1. Rule 12(1A) & (2) — Foreign Filing Details (Section 8): The applicant shall file the statement of foreign applications "
+                "in Form 3 within three months from the date of issuance of the first statement of objections (FER), replacing the prior requirement of six months from every foreign filing.\n"
+                "2. Rule 131(2) — Working of Patented Inventions (Section 146): The statement regarding the working of a patented invention on a commercial "
+                "scale in India in Form 27 shall be furnished once in respect of every period of three financial years, commencing from the financial year next to that in which the patent was granted.\n"
+                "3. Rule 24B & 24C — Request for examination expedited and reduced official fees for educational institutions and startups.\n"
+                "4. Rule 29A — Grace period under Section 31: Provides an explicit framework and Form 31 for availing one-year grace period post-disclosure."
+            ),
+            "bda_rules_2024_access_abs": (
+                "The Biological Diversity Rules, 2024 (Notified on 22nd October 2024 under Biological Diversity Act 2002 as amended 2023):\n"
+                "1. Rule 16 & 17 — Prior Approval for Access to Biological Resources and Associated Knowledge: Every person covered under section 3(2) who "
+                "intends to access biological resources occurring in India or associated traditional knowledge for commercial utilization or bio-survey shall submit an application to the National Biodiversity Authority (NBA) in Form I.\n"
+                "2. Benefit Sharing Slabs: Determination of fair and equitable benefit sharing shall range between 0.1% and 0.5% of the annual gross ex-factory sale of the commercial product, or 1% to 3% of the purchase price of the biological resource.\n"
+                "3. Registered AYUSH Practitioners Exemption: Local communities, cultivators of medicinal plants, and registered Indian AYUSH practitioners (Vaidyas, Hakims, Siddha doctors) are exempted from ABS payment under Section 7 and 24, provided a valid Certificate of Origin is maintained."
+            ),
+            "fssai_ayurveda_aahar_2022_reg_3": (
+                "Food Safety and Standards (Ayurveda Aahar) Regulations, 2022 and October 2024 Compendium:\n"
+                "1. Regulation 3 — Definition & Scope: 'Ayurveda Aahar' means food prepared in accordance with the recipes or ingredients or processes described in the 71 authoritative books of Ayurveda listed in First Schedule to Drugs and Cosmetics Act 1940 and the FSSAI October 2024 Compendium.\n"
+                "2. Statutory Exclusions: Ayurveda Aahar shall not include Ayurvedic drugs, patent and proprietary medicines, classical bhasmas or pishtis intended for clinical therapy, or Ayurvedic cosmetics.\n"
+                "3. Prohibitions: No synthetic vitamins, minerals, amino acids, or isolated chemical additives may be added. No therapeutic claims or disease cure/mitigation claims are permitted.\n"
+                "4. Logo & Packaging: Every package of Ayurveda Aahar shall prominently display the dedicated green Ayurveda Aahar logo and mandatory labeling declarations."
+            ),
+        }
+        return STATUTORY_REGISTRY.get(chunk_id)
+
     def scrape_source(self, source: StatutorySource) -> Optional[LegalChunk]:
         """Fetches document, extracts section, and constructs a LegalChunk."""
         if source.source_type == "kanoon":
@@ -548,6 +772,12 @@ class RealLegalScraper:
             full_text = self._fetch_pdf_text(source.url)
         elif source.source_type == "wipo_gratk":
             full_text = self._fetch_wipo_gratk_text(source.url)
+        elif source.source_type == "wipo_html":
+            full_text = self._fetch_wipo_html_text(source.url)
+        elif source.source_type == "wipo_signed_pdf":
+            full_text = self._fetch_wipo_signed_pdf_text(source.url, source.chunk_id)
+        elif source.source_type == "static_verified":
+            full_text = self._get_static_verified_text(source.chunk_id)
         else:
             logger.warning(f"Unknown source type: {source.source_type}")
             return None

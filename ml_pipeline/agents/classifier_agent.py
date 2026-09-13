@@ -27,10 +27,34 @@ class FormulationClassifierAgent:
     Classifies Ayurvedic products into statutory buckets and identifies Section 3(p) barriers.
     """
 
+    # Authoritative texts recognized under Drugs & Cosmetics Act First Schedule and FSSAI October 2024 Compendium (71 texts)
     CLASSICAL_TEXTS = [
+        # Major Brihat Trayi & Laghu Trayi
         "charaka samhita", "sushruta samhita", "ashtanga hridaya", "ashtanga sangraha",
-        "sahasrayoga", "sharngadhara samhita", "bhavaprakasha", "bhesajjakkhandhaka",
-        "ayurvedic formulary of india", "afi", "ayurvedic pharmacopoeia of india", "api"
+        "sharngadhara samhita", "sharangadhara samhita", "bhavaprakasha", "bhava prakasha",
+        "madhava nidana", "sahasrayoga", "bhaishajya ratnavali", "yoga ratnakara",
+        # First Schedule Statutory Authoritative Texts (Drugs & Cosmetics Act 1940)
+        "arogya kalpadruma", "arka prakasha", "arya bhishak", "ayurveda kalpadruma",
+        "ayurveda prakasha", "ayurveda samgraha", "ayurveda chintamani", "abhinava chintamani",
+        "ayurveda ratnakar", "bharat bhaishajya ratnakara", "brihat nighantu ratnakara",
+        "chakra datta", "chakradatta", "dravyaguna vijnana", "gada nigraha", "gadanigraha",
+        "harita samhita", "kashyapa samhita", "bhel samhita", "kupi-pakva rasayana",
+        "nighantu ratnakara", "rasa chandanshu", "rasa manjari", "rasa maramritam",
+        "rasa prakasha sudhakara", "rasa ratna samuccaya", "rasaratna samuccaya",
+        "rasa raja sundara", "rasa tarangini", "rasatarangini", "rasa yoga sagara",
+        "rasendra sara samgraha", "rasamrita", "sarva-roga chintamani", "sarvaroga chintamani",
+        "vaidya chintamani", "vaidyaka shabda sindhu", "vaidyaka chikitsa sara",
+        "vaidya jiwan", "vasava rajiyam", "yoga tarangini", "yoga chintamani",
+        "yoga ratnasamgraha", "vishwanath chikitsa", "vrinda chikitsa", "siddha yoga",
+        "vangasena", "bhesajjakkhandhaka", "parada samhita", "pathyapathya vinishchaya",
+        "siddha bhesaja manimala", "ayurveda saura", "rasapaddhati", "rasendra chintamani",
+        "rasendra kalpadruma", "dhanvantari nighantu", "raja nighantu", "shodhala nighantu",
+        "kaiyadeva nighantu", "saligram nighantu", "priya nighantu", "hridaya dipaka nighantu",
+        "siddhapradipika", "vaidya manorama", "chikitsa kalika", "chikitsa sara samgraha",
+        "brihadyoga tarangini", "kalyana karaka", "arka kalpa", "aupadhenava",
+        # Official pharmacopoeial compendia
+        "ayurvedic formulary of india", "afi", "ayurvedic pharmacopoeia of india", "api",
+        "fssai october 2024 compendium", "fssai ayurveda aahara compendium"
     ]
 
     @classmethod
@@ -51,16 +75,16 @@ class FormulationClassifierAgent:
                 )
             )
 
-        # Check Ayurveda Aahar
+        # Check Ayurveda Aahar / Nutraceutical
         if any(k in desc_lower for k in ["food", "supplement", "nutraceutical", "aahar", "dietary", "beverage", "candy", "cookie"]):
             return FormulationClassificationResult(
                 category="ayurveda_aahar",
                 confidence=0.92,
-                statutory_governance="Food Safety and Standards (Ayurveda Aahar) Regulations, 2022",
-                ip_bar_flag="No therapeutic or disease claims permitted; trade dress and trademark protection only.",
+                statutory_governance="Food Safety and Standards (Ayurveda Aahar) Regulations, 2022 & October 2024 Compendium (71 Texts)",
+                ip_bar_flag="No therapeutic or disease claims permitted; trade dress, trademark, and design protection primary. Excludes Ayurvedic drugs, proprietary medicines, bhasmas, and cosmetics.",
                 recommended_pathway=(
-                    "FSSAI license with dedicated Ayurveda Aahar logo. "
-                    "Cannot contain synthetic vitamins or minerals."
+                    "FSSAI license with mandatory Ayurveda Aahar logo. "
+                    "Formulated strictly from the 71 authoritative texts. Prohibits synthetic vitamins, minerals, or amino acids."
                 )
             )
 

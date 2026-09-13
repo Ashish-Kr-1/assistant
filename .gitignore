@@ -19,6 +19,7 @@ venv.bak/
 htmlcov/
 *.log
 
+CLAUDE.md
 # Node / Frontend
 node_modules/
 dist/

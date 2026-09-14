@@ -94,8 +94,16 @@ export default function ChatBot() {
   const [draft, setDraft] = useState("")
   const [isTyping, setIsTyping] = useState(false)
   const [theme, setTheme] = useState("light")
+  const [activeCase, setActiveCase] = useState(null) // Phase 2 Innovation Intake case, if one is active
   const scrollRef = useRef(null)
   const isMountedRef = useRef(true)
+  // Phase 2 — stable per-chat-session id so the backend can attach an Innovation
+  // Intake case to this conversation (see backend/app/services/case_service.py).
+  const conversationIdRef = useRef(
+    typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `conv-${Date.now()}-${Math.random().toString(16).slice(2)}`
+  )
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" })
@@ -149,6 +157,7 @@ export default function ChatBot() {
         jurisdiction,
         language: LANGUAGE_CODES[language] || "en",
         dpdp_consent: true,
+        conversation_id: conversationIdRef.current,
       })
 
       if (!isMountedRef.current) return
@@ -164,6 +173,15 @@ export default function ChatBot() {
           escalate: data.escalate_to_human,
         },
       ])
+
+      if (data.case_id) {
+        setActiveCase({
+          caseId: data.case_id,
+          status: data.case_status,
+          readyForResearch: Boolean(data.ready_for_research),
+          missingInformation: data.missing_information || [],
+        })
+      }
     } catch (err) {
       if (!isMountedRef.current) return
       setMessages((prev) => [
@@ -215,6 +233,21 @@ export default function ChatBot() {
           onFollowUpClick={handleSend}
           scrollRef={scrollRef}
         />
+
+        {activeCase && (
+          <div className={styles.caseStatusBar}>
+            Case {activeCase.caseId} —{" "}
+            {activeCase.readyForResearch
+              ? "ready for research"
+              : `intake in progress${
+                  activeCase.missingInformation.length
+                    ? ` (${activeCase.missingInformation.length} item${
+                        activeCase.missingInformation.length === 1 ? "" : "s"
+                      } remaining)`
+                    : ""
+                }`}
+          </div>
+        )}
 
         <div className={styles.disclaimerBar}>
           Educational &amp; guidance purposes only — does not constitute formal legal advice.

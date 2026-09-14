@@ -23,7 +23,19 @@ class Settings(BaseSettings):
     NEO4J_URI: str = os.getenv("NEO4J_URI", "bolt://localhost:7687")
     NEO4J_USER: str = os.getenv("NEO4J_USER", "neo4j")
     NEO4J_PASSWORD: str = os.getenv("NEO4J_PASSWORD", "ipsakti_secret_pass")
-    
+
+    # Relational Database (Phase 2 — Case / Innovation Intake persistence)
+    # Explicit DATABASE_URL always wins. Otherwise the app attempts the configured
+    # PostgreSQL instance and falls back to a local SQLite file if it isn't reachable
+    # (see backend/app/db/session.py), mirroring ml_pipeline/crag/llm_factory.py's
+    # graceful-degrade pattern so Phase 2 never requires a live DB in tests/dev.
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "")
+    POSTGRES_USER: str = os.getenv("POSTGRES_USER", "ipsakti")
+    POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "ipsakti_db_pass")
+    POSTGRES_DB: str = os.getenv("POSTGRES_DB", "ipsakti_db")
+    POSTGRES_HOST: str = os.getenv("POSTGRES_HOST", "localhost")
+    POSTGRES_PORT: int = int(os.getenv("POSTGRES_PORT", "5432"))
+
     # DPDP Audit Log Settings
     LOG_ANONYMOUS_QUERIES: bool = True
     LEGAL_DISCLAIMER_TEXT: str = (

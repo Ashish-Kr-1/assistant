@@ -1,11 +1,17 @@
 import logging
 from fastapi import APIRouter, HTTPException
+from sqlalchemy.orm import Session
+from fastapi import Depends
 from app.schemas.query_schema import QueryRequest, QueryResponse, CitationSchema
 from app.core.dpdp_logger import DPDPLogger
 from app.core.config import settings
 from app.core.r6_consent_guard import R6ConsentGuard
+from app.db.session import get_db
+from app.services.case_service import CaseService
 from ml_pipeline.crag.graph import CRAGPipeline
 from ml_pipeline.embeddings.vector_store_manager import VectorStoreManager
+from ml_pipeline.schemas.intent_schema import Route
+from ml_pipeline.classifier.intent_classifier import IntentClassifier
 from scripts.seed_corpus import get_foundational_corpus
 
 logger = logging.getLogger("query_api")
@@ -27,18 +33,15 @@ def get_crag_pipeline() -> CRAGPipeline:
 
 
 @router.post("/query", response_model=QueryResponse)
-async def query_assistant(request: QueryRequest):
+async def query_assistant(request: QueryRequest, db: Session = Depends(get_db)):
     """
-    Corrective RAG (CRAG) Endpoint for IP-SAKTI Sahayak (SIH PS045).
-    Enforces rules R1-R10:
-    - R1: Safe abstention if sources grade INCORRECT
-    - R2 & R3: Citation entailment and orphan claim removal
-    - R4: Strict National vs International regime isolation
-    - R5: Non-removable legal disclaimer
-    - R7: Mock chunk exclusion
-    - R8: Mandatory confidence indicator & escalation trigger
-    - R9: Formulation classification gate
-    - R10: Statutory version stamping
+    Query Endpoint for IP-SAKTI Sahayak (SIH PS045).
+    Phase 1: Intent + Entity Classification & Routing Layer
+    - CHAT: Direct conversational response (Bypasses CRAG and Qdrant)
+    - CLARIFICATION: Immediate structured clarification question
+    - OUT_OF_SCOPE: Immediate domain boundary rejection
+    - INNOVATION_INTAKE: Routes to Innovation Intake (enforcing Rule R9 classification gate)
+    - CRAG / RESEARCH: Executes full grounded Corrective RAG pipeline (Rules R1-R10)
     """
     query_text = request.query.strip()
     if not query_text:
@@ -63,6 +66,195 @@ async def query_assistant(request: QueryRequest):
         consent_given=request.dpdp_consent
     )
 
+    # 0. Phase 2 continuity: once a conversation has an in-progress Innovation Intake
+    # case, that case is the default context for every subsequent message in it —
+    # regardless of how Phase 1 would classify a given follow-up answer (e.g. "It's a
+    # herbal tablet for stress management" won't match any Phase 1 IP_PROTECTION
+    # pattern on its own, but it must still continue the active case, not get
+    # dropped into CLARIFICATION). Phase 1 classification is skipped entirely on this
+    # path — the intake agent does its own deterministic extraction per message — so
+    # a mid-intake follow-up never pays for (or depends on) a Phase 1 LLM call.
+    # This does not apply once a case is READY or ARCHIVED, so unrelated questions
+    # after that point route normally again.
+    if request.conversation_id:
+        active_case = CaseService.get_active_case(
+            db, user_id=request.user_id, conversation_id=request.conversation_id
+        )
+        if active_case is not None and active_case.status.value == "INTAKE_IN_PROGRESS":
+            intake_result = CaseService.route_conversation_turn(
+                db,
+                user_id=request.user_id,
+                conversation_id=request.conversation_id,
+                message=query_text,
+                phase1_entities=None,
+            )
+            return QueryResponse(
+                query=request.query,
+                jurisdiction=jurisdiction,
+                answer=intake_result.message or intake_result.next_question or "",
+                confidence_score=1.0 if intake_result.ready_for_research else 0.60,
+                confidence_level="HIGH" if intake_result.ready_for_research else "MEDIUM",
+                citations=[],
+                formulation_category=request.formulation_category,
+                is_abstained=False,
+                escalate_to_human=False,
+                abs_guidance=None,
+                disclaimer=settings.LEGAL_DISCLAIMER_TEXT,
+                anonymized_audit_ref=audit["anonymized_user_ref"],
+                intent="IP_PROTECTION",
+                route=Route.INNOVATION_INTAKE.value,
+                entities={},
+                needs_clarification=not intake_result.ready_for_research,
+                clarification_question=intake_result.next_question,
+                case_id=intake_result.case_id,
+                case_status=intake_result.status.value,
+                ready_for_research=intake_result.ready_for_research,
+                missing_information=intake_result.missing_information,
+            )
+
+    # ── Phase 1: Intent + Entity Classification ─────────────────────────────
+    intent_res = IntentClassifier.classify(query_text)
+
+    # 1. CHAT: Greetings and casual conversation bypass CRAG & Qdrant completely
+    if intent_res.route == Route.CHAT:
+        return QueryResponse(
+            query=request.query,
+            jurisdiction=jurisdiction,
+            answer=(
+                "Namaste! I am **IP-SAKTI Sahayak**, your AI assistant for Intellectual Property "
+                "and Regulatory Guidance in Ayurveda across National and International regimes. "
+                "How can I help you today with patenting, formulation classification, or ABS compliance?"
+            ),
+            confidence_score=0.99,
+            confidence_level="HIGH",
+            citations=[],
+            formulation_category=request.formulation_category,
+            is_abstained=False,
+            escalate_to_human=False,
+            abs_guidance=None,
+            disclaimer=settings.LEGAL_DISCLAIMER_TEXT,
+            anonymized_audit_ref=audit["anonymized_user_ref"],
+            intent=intent_res.intent.value,
+            route=intent_res.route.value,
+            entities=intent_res.entities.model_dump(),
+            needs_clarification=False
+        )
+
+    # 2. CLARIFICATION: Ambiguous / under-specified input
+    if intent_res.route == Route.CLARIFICATION:
+        return QueryResponse(
+            query=request.query,
+            jurisdiction=jurisdiction,
+            answer=intent_res.clarification_question or "What would you like help with—IP protection, patent research, regulatory requirements, biodiversity/ABS, or something else?",
+            confidence_score=intent_res.confidence,
+            confidence_level="LOW",
+            citations=[],
+            formulation_category=request.formulation_category,
+            is_abstained=False,
+            escalate_to_human=False,
+            abs_guidance=None,
+            disclaimer=settings.LEGAL_DISCLAIMER_TEXT,
+            anonymized_audit_ref=audit["anonymized_user_ref"],
+            intent=intent_res.intent.value,
+            route=intent_res.route.value,
+            entities=intent_res.entities.model_dump(),
+            needs_clarification=True,
+            clarification_question=intent_res.clarification_question
+        )
+
+    # 3. OUT_OF_SCOPE: Rejects off-topic inquiries
+    if intent_res.route == Route.OUT_OF_SCOPE:
+        return QueryResponse(
+            query=request.query,
+            jurisdiction=jurisdiction,
+            answer=(
+                "I am specialized exclusively in Intellectual Property and Regulatory Guidance "
+                "for Ayurveda, traditional knowledge, and biological resources under Indian and International law. "
+                "Your request appears to be outside this legal domain. "
+                "Our zero-hallucination protocols require safe refusal when no verified legal source exists."
+            ),
+            confidence_score=0.0,
+            confidence_level="LOW",
+            citations=[],
+            formulation_category=request.formulation_category,
+            is_abstained=True,
+            escalate_to_human=True,
+            abs_guidance=None,
+            disclaimer=settings.LEGAL_DISCLAIMER_TEXT,
+            anonymized_audit_ref=audit["anonymized_user_ref"],
+            intent=intent_res.intent.value,
+            route=intent_res.route.value,
+            entities=intent_res.entities.model_dump(),
+            needs_clarification=False
+        )
+
+    # 4a. INNOVATION_INTAKE with an active conversation: hand off to the Phase 2 Case flow
+    # (create/update case, collect structured facts, ask the next progressive question).
+    # This does NOT trigger research, classification, or any Phase 3+ engine — see
+    # backend/app/services/case_service.py. Callers that don't supply conversation_id keep
+    # the original stateless Rule R9 gate behavior below for backward compatibility.
+    if intent_res.route == Route.INNOVATION_INTAKE and request.conversation_id:
+        intake_result = CaseService.route_conversation_turn(
+            db,
+            user_id=request.user_id,
+            conversation_id=request.conversation_id,
+            message=query_text,
+            phase1_entities=intent_res.entities,
+        )
+        return QueryResponse(
+            query=request.query,
+            jurisdiction=jurisdiction,
+            answer=intake_result.message or intake_result.next_question or "",
+            confidence_score=1.0 if intake_result.ready_for_research else 0.60,
+            confidence_level="HIGH" if intake_result.ready_for_research else "MEDIUM",
+            citations=[],
+            formulation_category=request.formulation_category,
+            is_abstained=False,
+            escalate_to_human=False,
+            abs_guidance=None,
+            disclaimer=settings.LEGAL_DISCLAIMER_TEXT,
+            anonymized_audit_ref=audit["anonymized_user_ref"],
+            intent=intent_res.intent.value,
+            route=intent_res.route.value,
+            entities=intent_res.entities.model_dump(),
+            needs_clarification=not intake_result.ready_for_research,
+            clarification_question=intake_result.next_question,
+            case_id=intake_result.case_id,
+            case_status=intake_result.status.value,
+            ready_for_research=intake_result.ready_for_research,
+            missing_information=intake_result.missing_information,
+        )
+
+    # 4b. INNOVATION_INTAKE without a conversation_id (no case context available):
+    # If the user has not yet classified their formulation, initiate with Rule R9 clarification
+    if intent_res.route == Route.INNOVATION_INTAKE and not request.skip_classification_gate and not request.formulation_category:
+        return QueryResponse(
+            query=request.query,
+            jurisdiction=jurisdiction,
+            answer=(
+                "⚠️ **Formulation Classification Required (Rule R9)**\n\n"
+                "To begin your IP protection and patenting assessment (Innovation Intake), please classify your formulation: "
+                "Is this formulation drawn verbatim from an authoritative Ayurvedic text (e.g. Charaka Samhita), "
+                "or is it a novel proprietary combination/standardized extract?\n\n"
+                "*Note: Statutory IP barriers (such as Section 3(p) under the Patents Act) depend strictly on your product category.*"
+            ),
+            confidence_score=0.50,
+            confidence_level="MEDIUM",
+            citations=[],
+            formulation_category=request.formulation_category,
+            is_abstained=False,
+            escalate_to_human=False,
+            abs_guidance=None,
+            disclaimer=settings.LEGAL_DISCLAIMER_TEXT,
+            anonymized_audit_ref=audit["anonymized_user_ref"],
+            intent=intent_res.intent.value,
+            route=intent_res.route.value,
+            entities=intent_res.entities.model_dump(),
+            needs_clarification=True,
+            clarification_question="Is this formulation drawn verbatim from an authoritative Ayurvedic text, or is it a novel proprietary combination/standardized extract?"
+        )
+
+    # 5. CRAG & RESEARCH: Executes Grounded Corrective RAG
     pipeline = get_crag_pipeline()
     crag_result = pipeline.run(
         query=query_text,
@@ -72,13 +264,6 @@ async def query_assistant(request: QueryRequest):
     )
 
     # ── Rule R6: Paid-source consent check ──────────────────────────────────
-    # If any citation in the result is from a paid/gated source, enforce per-query consent.
-    # NOTE: the live corpus (scripts/seed_corpus.py) currently contains zero
-    # VERIFIED_PAID sources — everything ingested today is VERIFIED_PUBLIC or
-    # MOCK_PENDING_ACCESS (TKDL) — so this branch is dormant until Phase 3
-    # paid-source ingestion (e.g. Manupatra case law) is added. It is unit-
-    # and integration-tested directly in backend/tests/test_r6_consent_guard.py
-    # so the gate is proven to work even though nothing triggers it yet.
     paid_citations = [
         c for c in crag_result.get("citations", [])
         if c.get("status") == "verified_paid"
@@ -94,7 +279,6 @@ async def query_assistant(request: QueryRequest):
             )
             r6_consent_records.append(r6_record.model_dump())
             if not access_granted:
-                # Strip paid citations from result per R6
                 crag_result["citations"] = [
                     c for c in crag_result.get("citations", [])
                     if c.get("status") != "verified_paid"
@@ -106,7 +290,6 @@ async def query_assistant(request: QueryRequest):
                         "_Re-submit with `paid_source_consent: true` to include paid-source citations._"
                     )
                     crag_result["is_abstained"] = False
-    # ────────────────────────────────────────────────────────────────────────
 
     # Transform citations to CitationSchema
     api_citations = []
@@ -136,5 +319,9 @@ async def query_assistant(request: QueryRequest):
         escalate_to_human=crag_result.get("escalate_to_human", False),
         abs_guidance=crag_result.get("abs_guidance"),
         disclaimer=crag_result.get("disclaimer") or settings.LEGAL_DISCLAIMER_TEXT,
-        anonymized_audit_ref=audit["anonymized_user_ref"]
+        anonymized_audit_ref=audit["anonymized_user_ref"],
+        intent=intent_res.intent.value,
+        route=intent_res.route.value,
+        entities=intent_res.entities.model_dump(),
+        needs_clarification=crag_result.get("needs_classification_clarification", False)
     )

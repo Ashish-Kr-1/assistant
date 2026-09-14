@@ -38,6 +38,9 @@ qdrant_data/
 neo4j_data/
 postgres_data/
 
+# Phase 2 — local SQLite fallback for the Case store (see backend/app/db/session.py)
+ipsakti_cases.db
+
 # IDE & System
 .vscode/
 .idea/

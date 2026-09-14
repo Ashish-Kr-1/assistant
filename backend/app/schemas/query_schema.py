@@ -18,7 +18,19 @@ class QueryRequest(BaseModel):
             "Previous consent is never reused. Defaults to False (public corpus only)."
         )
     )
-
+    conversation_id: Optional[str] = Field(
+        None,
+        description=(
+            "Phase 2 — client-managed conversation/session id. When supplied and the routed "
+            "intent is INNOVATION_INTAKE, the query is handed to the Innovation Intake case flow "
+            "instead of the static Rule R9 gate message. Omit to keep prior stateless behavior."
+        )
+    )
+    user_id: str = Field(
+        "anonymous_user",
+        description="Phase 2 — caller identity for case ownership. Client-supplied until a real "
+                     "auth system exists in this project."
+    )
 
 
 class CitationSchema(BaseModel):
@@ -48,3 +60,16 @@ class QueryResponse(BaseModel):
     abs_guidance: Optional[Dict[str, Any]] = None
     disclaimer: str
     anonymized_audit_ref: str
+
+    # Phase 1 Intent + Entity Classification routing metadata
+    intent: Optional[str] = None
+    route: Optional[str] = None
+    entities: Optional[Dict[str, Any]] = None
+    needs_clarification: Optional[bool] = False
+    clarification_question: Optional[str] = None
+
+    # Phase 2 Innovation Intake / Case metadata (present only when routed to a case)
+    case_id: Optional[str] = None
+    case_status: Optional[str] = None
+    ready_for_research: Optional[bool] = None
+    missing_information: Optional[List[str]] = None

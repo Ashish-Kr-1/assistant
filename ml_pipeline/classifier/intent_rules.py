@@ -85,17 +85,21 @@ class IntentRuleEngine:
                 needs_clarification=False,
                 method="RULE"
             )
-        # Check if entire query is just a greeting phrase (e.g. "hey there", "hello assistant")
-        if re.match(r"^(hi|hello|hey|namaste|namaskar|good (morning|afternoon|evening))\s*(there|assistant|bot)?$", cleaned):
-            return IntentResult(
-                intent=Intent.CHAT,
-                confidence=0.99,
-                route=Route.CHAT,
-                entities=Entities(),
-                requires_case=False,
-                needs_clarification=False,
-                method="RULE"
-            )
+        # Check if query contains greeting or help request
+        if re.search(r"\b(hi|hello|hey|namaste|namaskar|good (morning|afternoon|evening))\b", lower) or \
+           re.search(r"\b(how can you help|what can you do|who are you|help me understand|what do you do)\b", lower):
+            # But ensure it's not a legal inquiry that happens to say 'hi'
+            if not any(k in lower for k in ["patent", "formulation", "fssai", "abs", "section", "act", "license"]):
+                return IntentResult(
+                    intent=Intent.CHAT,
+                    confidence=0.99,
+                    route=Route.CHAT,
+                    entities=Entities(),
+                    requires_case=False,
+                    needs_clarification=False,
+                    method="RULE"
+                )
+
 
         # 2. Out of Scope (General Knowledge, Cooking, Weather, etc.)
         for kw in cls.OUT_OF_SCOPE_KEYWORDS:
@@ -282,17 +286,16 @@ class IntentRuleEngine:
                 method="RULE"
             )
 
-        # 10. Legal Q&A & Case Queries (Statutes, sections, case law databases)
+        # 10. Legal Q&A & Case Queries (Statutes, sections, patent questions, regulatory queries)
         legal_qa_patterns = [
-            r"^what is a patent\??$",
-            r"^what is a trademark\??$",
-            r"^what is copyright\??$",
-            r"^what is section \d+.*",
-            r"^explain section \d+.*",
-            r"^what are the requirements of section \d+.*",
-            r"^can i patent traditional knowledge .* under section 3\(p\)\??",
-            r"^what are the mandatory disclosure requirements .* under wipo.*",
+            r"\b(can i patent|how to patent|is .* patentable|patentability|patent protection|patent an ayurvedic|patent application|file a patent|patenting)\b",
+            r"\b(what is a patent|what is a trademark|what is copyright|what is ip|ip rights)\b",
+            r"\b(what is section \d+|explain section \d+|section 3\(?[pde]\)?|section 10\(?4\)?|section 64|section 25)\b",
+            r"\b(what are the requirements|statutory bars?|mandatory disclosure|wipo gratk|nagoya protocol|budapest treaty)\b",
             r"\b(manupatra|indian kanoon|supreme court judgment|high court ruling|case law|precedents?)\b",
+            r"\b(fssai|ayurveda aahar|ayurveda aahara|nutraceutical|food regulations)\b",
+            r"\b(abs requirements|biodiversity act|national biodiversity authority|nba approval|sbb intimation|benefit sharing)\b",
+            r"\b(tell me about|how does .* work|what are the rules|what are the guidelines|explain)\b",
             r"^what does .* say (about|on)\b"
         ]
         if any(re.search(p, lower) for p in legal_qa_patterns):
@@ -305,7 +308,7 @@ class IntentRuleEngine:
             return IntentResult(
                 intent=intent,
                 confidence=0.95,
-                route=Route.CRAG,
+                route=resolve_route(intent),
                 entities=entities,
                 requires_case=False,
                 needs_clarification=False,

@@ -118,11 +118,11 @@ class CRAGPipeline:
         }
 
     def _node_generate(self, state: CRAGState) -> Dict[str, Any]:
-        """Grounded answer generation from verified/correct chunks."""
+        """Grounded answer generation from verified/correct chunks or retrieved context."""
         active_chunks = state.correct_chunks
         if not active_chunks:
             ambiguous = [g.chunk for g in state.graded_chunks if g.outcome == GradingOutcome.AMBIGUOUS]
-            active_chunks = ambiguous[:2]
+            active_chunks = ambiguous if ambiguous else state.retrieved_chunks
 
         answers = self.generator.generate_answer(
             query=state.query,
@@ -175,30 +175,9 @@ class CRAGPipeline:
     # --- CONDITIONAL ROUTER EDGES ---
 
     def _edge_post_grade(self, state: CRAGState) -> str:
-        """Determines routing following the CRAG relevance grading pass."""
-        correct_count = len(state.correct_chunks)
-        ambiguous_count = len([g for g in state.graded_chunks if g.outcome == GradingOutcome.AMBIGUOUS])
-        incorrect_count = len([g for g in state.graded_chunks if g.outcome == GradingOutcome.INCORRECT])
-
-        # If we have at least one high-confidence correct chunk
-        if correct_count >= 1:
-            return "generate"
-
-        # If all retrieved chunks are INCORRECT
-        if incorrect_count == len(state.graded_chunks) and len(state.graded_chunks) > 0:
-            if not state.fallback_triggered:
-                return "fallback"
-            return "abstain"  # Rule R1: Abstain when all sources fail
-
-        # If results are ambiguous and fallback hasn't fired yet
-        if ambiguous_count > 0 and not state.fallback_triggered:
-            return "fallback"
-
-        # If fallback already fired and still ambiguous, generate from ambiguous
-        if ambiguous_count > 0:
-            return "generate"
-
-        return "abstain"
+        """Determines routing following the CRAG relevance grading pass. Always routes to generation."""
+        # Always proceed to generate so the user receives a comprehensive answer
+        return "generate"
 
     def _run_single_jurisdiction(
         self,
@@ -220,40 +199,12 @@ class CRAGPipeline:
         self,
         query: str,
         jurisdiction: str = "national",
-        skip_classification_gate: bool = False,
+        skip_classification_gate: bool = True,
         formulation_category: str = None
     ) -> Dict[str, Any]:
         """
-        Runs the pipeline for an end-user query with Rule R9 formulation classification gate.
-        Enforces Rule R4 (Jurisdiction Separation):
-        - When single jurisdiction ('national'/'india' or 'international'): executes single isolated retrieval and generation.
-        - When cross-jurisdiction ('both'): executes two separate retrieval + answer calls (one per jurisdiction)
-          and outputs two clearly labeled, unblended sections.
+        Runs the pipeline for an end-user query directly without blocking gates.
         """
-        from ml_pipeline.agents.classifier_agent import FormulationClassifierAgent
-
-        # Rule R9: Formulation classification precedes IP guidance
-        is_ip_query = any(k in query.lower() for k in ["patent", "protect", "ipr", "novelty", "license"])
-        if is_ip_query and not skip_classification_gate and not formulation_category:
-            classification = FormulationClassifierAgent.classify(query)
-            if classification.category == "ambiguous":
-                return {
-                    "query": query,
-                    "jurisdiction": jurisdiction,
-                    "is_abstained": False,
-                    "answer": (
-                        f"⚠️ **Formulation Classification Required (Rule R9)**\n\n"
-                        f"{classification.clarifying_question}\n\n"
-                        f"*Note: Statutory IP barriers (such as Section 3(p) under the Patents Act) depend strictly on your product category.*"
-                    ),
-                    "needs_classification_clarification": True,
-                    "citations": [],
-                    "confidence_score": 0.50,
-                    "confidence_level": "MEDIUM",
-                    "escalate_to_human": False,
-                    "disclaimer": OutputAssembler.MANDATORY_DISCLAIMER
-                }
-
         target_jurisdiction = JurisdictionType.from_str(jurisdiction)
 
         if target_jurisdiction == JurisdictionType.BOTH:

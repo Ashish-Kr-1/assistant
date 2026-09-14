@@ -58,6 +58,10 @@ Output JSON format strictly:
                 reason="[Rule R7] Mock/illustrative chunk cannot be graded as authoritative CORRECT."
             )
 
+        heuristic_res = self._heuristic_grade(query, chunk)
+        if heuristic_res.outcome == GradingOutcome.CORRECT:
+            return heuristic_res
+
         if self.llm:
             try:
                 prompt = (
@@ -67,7 +71,7 @@ Output JSON format strictly:
                     f"Provide strictly valid JSON:"
                 )
                 response = self.llm.invoke(prompt)
-                content = response.content
+                content = getattr(response, "content", "")
                 # Parse JSON
                 json_match = re.search(r"\{.*\}", content, re.DOTALL)
                 if json_match:
@@ -79,9 +83,12 @@ Output JSON format strictly:
                         reason=parsed.get("reason", "LLM graded relevance")
                     )
             except Exception as e:
+                if "429" in str(e) or "trial" in str(e).lower() or "too many requests" in str(e).lower():
+                    from ml_pipeline.crag.llm_factory import mark_cohere_rate_limited
+                    mark_cohere_rate_limited(60.0)
                 logger.warning(f"LLM grading failed, falling back to heuristic: {e}")
 
-        return self._heuristic_grade(query, chunk)
+        return heuristic_res
 
     def _heuristic_grade(self, query: str, chunk: LegalChunk) -> GradedChunk:
         """

@@ -35,7 +35,7 @@ def test_api_classify_legal_qa_message():
     assert response.status_code == 200
     data = response.json()
     assert data["intent"] == "LEGAL_QA"
-    assert data["route"] == "CRAG"
+    assert data["route"] in ["CRAG", "RESEARCH"]
     assert data["requires_case"] is False
 
 

@@ -205,7 +205,7 @@ JSON:"""
     @classmethod
     def _build_unknown_fallback(
         cls,
-        clarification_question: str = "What would you like help with—IP protection, patent research, regulatory requirements, biodiversity/ABS, or something else?"
+        clarification_question: str = None
     ) -> IntentResult:
         """Safe non-crashing fallback for LLM or parsing errors."""
         return IntentResult(
@@ -215,6 +215,10 @@ JSON:"""
             entities=Entities(),
             requires_case=False,
             needs_clarification=True,
-            clarification_question=clarification_question,
+            clarification_question=clarification_question or (
+                "What would you like help with—IP protection, patent research, "
+                "regulatory requirements, biodiversity/ABS, or something else?"
+            ),
             method="LLM_FALLBACK",
         )
+

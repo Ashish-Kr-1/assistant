@@ -14,7 +14,21 @@ logger = logging.getLogger("llm_factory")
 # Hackathon demo reliability (Section 39/35): a live LLM call must never hang the
 # request indefinitely. If the provider doesn't respond in time, the caller's
 # existing try/except falls back to deterministic heuristics rather than blocking.
-LLM_TIMEOUT_SECONDS = float(os.getenv("LLM_TIMEOUT_SECONDS", "12"))
+LLM_TIMEOUT_SECONDS = float(os.getenv("LLM_TIMEOUT_SECONDS", "5"))
+
+import time
+_cohere_rate_limited_until: float = 0.0
+
+
+def mark_cohere_rate_limited(seconds: float = 60.0):
+    global _cohere_rate_limited_until
+    _cohere_rate_limited_until = time.time() + seconds
+    logger.warning(f"Cohere rate-limited (429). Circuit breaker engaged for {seconds}s.")
+
+
+def is_cohere_rate_limited() -> bool:
+    global _cohere_rate_limited_until
+    return time.time() < _cohere_rate_limited_until
 
 
 def get_llm(temperature: float = 0.0, preferred_model: Optional[str] = None) -> Optional[BaseChatModel]:
@@ -33,6 +47,9 @@ def get_llm(temperature: float = 0.0, preferred_model: Optional[str] = None) -> 
         if not cohere_key:
             logger.warning("LLM_PROVIDER set to 'cohere' but COHERE_API_KEY is missing.")
             return None
+        if is_cohere_rate_limited():
+            logger.info("Cohere circuit breaker is active (rate limited). Using fast domain synthesis.")
+            return None
         try:
             from langchain_cohere import ChatCohere
             model = preferred_model or os.getenv("COHERE_MODEL", "command-a-03-2025")
@@ -42,6 +59,7 @@ def get_llm(temperature: float = 0.0, preferred_model: Optional[str] = None) -> 
                 temperature=temperature,
                 cohere_api_key=cohere_key,
                 timeout_seconds=LLM_TIMEOUT_SECONDS,
+                max_retries=0,
             )
         except Exception as e:
             logger.error(f"Failed to initialize ChatCohere: {e}")

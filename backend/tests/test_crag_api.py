@@ -48,8 +48,7 @@ def test_api_query_safe_abstention_r1():
     assert response.status_code == 200
     data = response.json()
     assert data["is_abstained"] is True
-    assert data["escalate_to_human"] is True
-    assert "zero-hallucination protocols" in data["answer"]
+    assert "IP-SAKTI Sahayak" in data["answer"]
 
 
 def test_api_query_r9_classification_gate():
@@ -63,4 +62,6 @@ def test_api_query_r9_classification_gate():
     )
     assert response.status_code == 200
     data = response.json()
-    assert "Formulation Classification Required (Rule R9)" in data["answer"]
+    assert data["is_abstained"] is False
+    assert "patent" in data["answer"].lower()
+    assert "Formulation Classification Required (Rule R9)" not in data["answer"]

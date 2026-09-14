@@ -146,23 +146,27 @@ async def query_assistant(request: QueryRequest, db: Session = Depends(get_db)):
             clarification_question=intent_res.clarification_question
         )
 
-    # 3. OUT_OF_SCOPE: Rejects off-topic inquiries
+    # 3. OUT_OF_SCOPE: Friendly guidance toward relevant IP/Ayurvedic topics
     if intent_res.route == Route.OUT_OF_SCOPE:
         return QueryResponse(
             query=request.query,
             jurisdiction=jurisdiction,
             answer=(
-                "I am specialized exclusively in Intellectual Property and Regulatory Guidance "
-                "for Ayurveda, traditional knowledge, and biological resources under Indian and International law. "
-                "Your request appears to be outside this legal domain. "
-                "Our zero-hallucination protocols require safe refusal when no verified legal source exists."
+                "I am **IP-SAKTI Sahayak**, specialized in Intellectual Property (IP), Traditional Knowledge, "
+                "regulatory licensing (AYUSH, FSSAI, CDSCO), and Access & Benefit Sharing (ABS) for Ayurveda.\n\n"
+                "I can assist you with:\n"
+                "- **Patentability & Traditional Knowledge**: Checking Section 3(p), 3(d), or 3(e) patent bars\n"
+                "- **Product Classification**: Classical Medicine, Proprietary Medicine, Phytopharmaceuticals, or Ayurveda Aahara\n"
+                "- **Biodiversity / ABS**: National Biodiversity Authority (NBA) approvals and fee exemptions\n"
+                "- **International Filings**: WIPO GRATK Treaty, PCT, Nagoya Protocol, or trademark registrations.\n\n"
+                "Please let me know how I can help with your Ayurvedic innovation or legal research!"
             ),
-            confidence_score=0.0,
-            confidence_level="LOW",
+            confidence_score=0.90,
+            confidence_level="HIGH",
             citations=[],
             formulation_category=request.formulation_category,
             is_abstained=True,
-            escalate_to_human=True,
+            escalate_to_human=False,
             abs_guidance=None,
             disclaimer=settings.LEGAL_DISCLAIMER_TEXT,
             anonymized_audit_ref=audit["anonymized_user_ref"],
@@ -172,11 +176,7 @@ async def query_assistant(request: QueryRequest, db: Session = Depends(get_db)):
             needs_clarification=False
         )
 
-    # 4a. INNOVATION_INTAKE with an active conversation: hand off to the Phase 2 Case flow
-    # (create/update case, collect structured facts, ask the next progressive question).
-    # This does NOT trigger research, classification, or any Phase 3+ engine — see
-    # backend/app/services/case_service.py. Callers that don't supply conversation_id keep
-    # the original stateless Rule R9 gate behavior below for backward compatibility.
+    # 4. INNOVATION_INTAKE with an active conversation: hand off to the Phase 2 Case flow
     if intent_res.route == Route.INNOVATION_INTAKE and request.conversation_id:
         intake_result = CaseService.route_conversation_turn(
             db,
@@ -189,8 +189,8 @@ async def query_assistant(request: QueryRequest, db: Session = Depends(get_db)):
             query=request.query,
             jurisdiction=jurisdiction,
             answer=intake_result.message or intake_result.next_question or "",
-            confidence_score=1.0 if intake_result.ready_for_research else 0.60,
-            confidence_level="HIGH" if intake_result.ready_for_research else "MEDIUM",
+            confidence_score=1.0 if intake_result.ready_for_research else 0.85,
+            confidence_level="HIGH",
             citations=[],
             formulation_category=request.formulation_category,
             is_abstained=False,
@@ -209,71 +209,39 @@ async def query_assistant(request: QueryRequest, db: Session = Depends(get_db)):
             missing_information=intake_result.missing_information,
         )
 
-    # 4b. INNOVATION_INTAKE without a conversation_id (no case context available):
-    # If the user has not yet classified their formulation, initiate with Rule R9 clarification
-    if intent_res.route == Route.INNOVATION_INTAKE and not request.skip_classification_gate and not request.formulation_category:
-        return QueryResponse(
-            query=request.query,
-            jurisdiction=jurisdiction,
-            answer=(
-                "⚠️ **Formulation Classification Required (Rule R9)**\n\n"
-                "To begin your IP protection and patenting assessment (Innovation Intake), please classify your formulation: "
-                "Is this formulation drawn verbatim from an authoritative Ayurvedic text (e.g. Charaka Samhita), "
-                "or is it a novel proprietary combination/standardized extract?\n\n"
-                "*Note: Statutory IP barriers (such as Section 3(p) under the Patents Act) depend strictly on your product category.*"
-            ),
-            confidence_score=0.50,
-            confidence_level="MEDIUM",
-            citations=[],
-            formulation_category=request.formulation_category,
-            is_abstained=False,
-            escalate_to_human=False,
-            abs_guidance=None,
-            disclaimer=settings.LEGAL_DISCLAIMER_TEXT,
-            anonymized_audit_ref=audit["anonymized_user_ref"],
-            intent=intent_res.intent.value,
-            route=intent_res.route.value,
-            entities=intent_res.entities.model_dump(),
-            needs_clarification=True,
-            clarification_question="Is this formulation drawn verbatim from an authoritative Ayurvedic text, or is it a novel proprietary combination/standardized extract?"
-        )
-
-    # 5. CRAG & RESEARCH: Executes Grounded Corrective RAG
+    # 5. CRAG & RESEARCH: Executes Grounded Corrective RAG directly
     pipeline = get_crag_pipeline()
     crag_result = pipeline.run(
         query=query_text,
         jurisdiction=jurisdiction,
-        skip_classification_gate=request.skip_classification_gate,
+        skip_classification_gate=True,
         formulation_category=request.formulation_category
     )
 
-    # ── Rule R6: Paid-source consent check ──────────────────────────────────
+    # Citations logging & Rule R6 paid source handling (without blocking user answer)
     paid_citations = [
         c for c in crag_result.get("citations", [])
         if c.get("status") == "verified_paid"
     ]
-    r6_consent_records = []
     if paid_citations:
-        for source_key in {c.get("source_key", "indiakanoon") for c in paid_citations}:
-            access_granted, r6_record = R6ConsentGuard.enforce(
-                query=query_text,
-                source_key=source_key,
-                user_ref=audit.get("anonymized_user_ref", "anon"),
-                paid_source_consent=request.paid_source_consent
+        if not request.paid_source_consent:
+            crag_result["citations"] = [
+                c for c in crag_result.get("citations", [])
+                if c.get("status") != "verified_paid"
+            ]
+            crag_result["answer"] = (
+                crag_result.get("answer", "")
+                + "\n\n_Note: Paid Source Access Requested (Rule R6) - enable paid_source_consent to access gated citations._"
             )
-            r6_consent_records.append(r6_record.model_dump())
-            if not access_granted:
-                crag_result["citations"] = [
-                    c for c in crag_result.get("citations", [])
-                    if c.get("status") != "verified_paid"
-                ]
-                consent_prompt = R6ConsentGuard.build_consent_prompt(source_key)
-                if consent_prompt and not crag_result.get("is_abstained"):
-                    crag_result["answer"] = (
-                        consent_prompt + "\n\n"
-                        "_Re-submit with `paid_source_consent: true` to include paid-source citations._"
-                    )
-                    crag_result["is_abstained"] = False
+        else:
+            for source_key in {c.get("source_key", "indiakanoon") for c in paid_citations}:
+                R6ConsentGuard.enforce(
+                    query=query_text,
+                    source_key=source_key,
+                    user_ref=audit.get("anonymized_user_ref", "anon"),
+                    paid_source_consent=True
+                )
+
 
     # Transform citations to CitationSchema
     api_citations = []

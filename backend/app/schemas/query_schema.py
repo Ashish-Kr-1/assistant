@@ -31,6 +31,10 @@ class QueryRequest(BaseModel):
         description="Phase 2 — caller identity for case ownership. Client-supplied until a real "
                      "auth system exists in this project."
     )
+    mode: Optional[str] = Field(
+        None,
+        description="Operation mode: 'query' (direct statutory Q&A with Cohere and citations) or 'deep_research' (case intake, legal assessment & report generation)."
+    )
 
 
 class CitationSchema(BaseModel):
@@ -73,3 +77,6 @@ class QueryResponse(BaseModel):
     case_status: Optional[str] = None
     ready_for_research: Optional[bool] = None
     missing_information: Optional[List[str]] = None
+
+    # Real-time backend execution logs for frontend terminal display
+    execution_logs: Optional[List[str]] = Field(default_factory=list)

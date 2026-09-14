@@ -37,12 +37,16 @@ from ml_pipeline.schemas.case_schema import (
 # Product types that make the formulation/TK questions relevant.
 _FORMULATION_LIKE_TYPES = {
     "TABLET", "CAPSULE", "POWDER", "OIL", "CREAM", "FOOD", "COSMETIC",
-    "FORMULATION", "AYURVEDIC_FORMULATION", "MEDICINE",
+    "FORMULATION", "AYURVEDIC_FORMULATION", "MEDICINE", "BALM", "OINTMENT",
+    "GEL", "SYRUP", "PASTE", "LOTION", "DROPS", "SPRAY", "CHURNA", "KWATH",
+    "BHASMA", "TAILA", "GHRITA", "ASAVA", "ARISHTA", "LEPA",
 }
 
 _PRODUCT_TYPE_KEYWORDS = [
     "tablet", "capsule", "powder", "oil", "cream", "food", "cosmetic",
-    "device", "process", "software", "formulation",
+    "device", "process", "software", "formulation", "balm", "ointment",
+    "gel", "syrup", "paste", "lotion", "drops", "spray", "churna", "kwath",
+    "bhasma", "taila", "ghrita", "lepa",
 ]
 
 _DEVELOPMENT_STAGE_KEYWORDS = {
@@ -57,16 +61,88 @@ _DEVELOPMENT_STAGE_KEYWORDS = {
 }
 
 _TK_NONE_PATTERNS = [
-    r"\bmy own\b", r"\bown formulation\b", r"\bnot based on\b", r"\bnovel combination\b",
-    r"\bnot from a classical\b", r"\bno classical\b",
+    r"\bown\b",
+    r"\bmy own\b",
+    r"\bmine\b",
+    r"\bit is my\b",
+    r"\bit is mine\b",
+    r"\bmy formulation\b",
+    r"\bown formulation\b",
+    r"\bself\b",
+    r"\bours\b",
+    r"\bcreated by (me|us)\b",
+    r"\bdeveloped by (me|us)\b",
+    r"\bformulated by (me|us)\b",
+    r"\binvented by (me|us)\b",
+    r"\bnew formulation\b",
+    r"\bnovel formulation\b",
+    r"\bproprietary\b",
+    r"\bmodern\b",
+    r"\boriginal\b",
+    r"\bnot based on\b",
+    r"\bnovel combination\b",
+    r"\bnot from a classical\b",
+    r"\bnot from (any )?text\b",
+    r"\bno classical\b",
+    r"\bnot classical\b",
+    r"\bnot traditional\b",
+    r"\bno\b",
+    r"\bneither\b",
+    r"\bnone\b",
+    r"\bpersonal\b",
 ]
 _TK_CLASSICAL_PATTERNS = [
-    r"\bclassical (text|reference)\b", r"\bcharaka samhita\b", r"\bsushruta samhita\b",
-    r"\bsharangadhara samhita\b", r"\bbhaishajya ratnavali\b", r"\bayurvedic text\b",
+    r"\bclassical\b",
+    r"\bclassical (text|reference|formula|formulation|book|source)\b",
+    r"\bcharaka\b",
+    r"\bsushruta\b",
+    r"\bashtanga\b",
+    r"\bsharangadhara\b",
+    r"\bbhaishajya\b",
+    r"\bshastra\b",
+    r"\bsamhita\b",
+    r"\bgranth\b",
+    r"\bved(a|ic)?\b",
+    r"\bfirst schedule\b",
+    r"\bayurvedic text\b",
+    r"\bayurveda text\b",
+    r"\btext\b",
+    r"\bancient text\b",
 ]
 _TK_TRADITIONAL_PATTERNS = [
-    r"\btraditional use\b", r"\bcommunity knowledge\b", r"\bpassed down\b", r"\blocal community\b",
+    r"\btraditional\b",
+    r"\btraditional use\b",
+    r"\btraditional knowledge\b",
+    r"\bcommunity knowledge\b",
+    r"\bpassed down\b",
+    r"\blocal community\b",
+    r"\bfolk(lore)?\b",
+    r"\btribal\b",
+    r"\bindigenous\b",
+    r"\bancestral\b",
+    r"\bgrandma\b",
+    r"\bfamily recipe\b",
+    r"\btk\b",
 ]
+
+_EXPANDED_JURISDICTIONS = {
+    "india": "INDIA", "indian": "INDIA",
+    "usa": "USA", "us": "USA", "united states": "USA", "america": "USA",
+    "uk": "UK", "united kingdom": "UK", "britain": "UK", "england": "UK",
+    "germany": "GERMANY", "german": "GERMANY",
+    "europe": "EUROPE", "eu": "EU", "european": "EU",
+    "japan": "JAPAN", "japanese": "JAPAN",
+    "australia": "AUSTRALIA", "australian": "AUSTRALIA",
+    "canada": "CANADA", "canadian": "CANADA",
+    "singapore": "SINGAPORE",
+    "uae": "UAE", "dubai": "UAE",
+    "china": "CHINA", "chinese": "CHINA",
+    "brazil": "BRAZIL",
+    "france": "FRANCE",
+    "switzerland": "SWITZERLAND",
+    "new zealand": "NEW ZEALAND",
+    "global": "GLOBAL", "worldwide": "GLOBAL", "international": "GLOBAL", "world": "GLOBAL",
+}
 
 _NEW_CASE_TRIGGER_PATTERNS = [
     r"\banother (invention|formulation|product|idea)\b",
@@ -250,8 +326,67 @@ class InnovationIntakeAgent:
         return None
 
     @classmethod
-    def _extract_tk_basis(cls, text: str) -> Optional[TKBasis]:
+    def _extract_ip_objective(cls, text: str) -> Optional[IPObjective]:
+        lower = text.lower().strip()
+        if not lower:
+            return None
+        if any(re.search(p, lower) for p in [
+            r"\bpatents?\b", r"\bpatenting\b", r"\binvention\b", r"\bprotect\b",
+            r"\bprotection\b", r"\bip\b", r"\bsafeguard\b", r"\bmonopoly\b", r"\bfile\b", r"\bfiling\b"
+        ]):
+            return IPObjective.PATENT
+        if any(re.search(p, lower) for p in [
+            r"\btrademarks?\b", r"\btm\b", r"\bbrand\b", r"\bbrand name\b", r"\blogo\b", r"\btrade mark\b"
+        ]):
+            return IPObjective.TRADEMARK
+        if any(re.search(p, lower) for p in [
+            r"\bcopyrights?\b", r"\bliterary\b", r"\bcode\b", r"\bbook\b"
+        ]):
+            return IPObjective.COPYRIGHT
+        if any(re.search(p, lower) for p in [
+            r"\bdesigns?\b", r"\baesthetic\b", r"\bshape\b", r"\bpackaging design\b"
+        ]):
+            return IPObjective.DESIGN
+        if any(re.search(p, lower) for p in [
+            r"\bgi\b", r"\bgeographical indication\b"
+        ]):
+            return IPObjective.GI
+        return None
+
+    @classmethod
+    def _extract_ingredients_from_text(cls, text: str) -> List[str]:
+        clean = re.sub(
+            r"^(the\s+)?(main\s+)?ingredients?\s+(are|is|include|include:)?", "", text, flags=re.IGNORECASE
+        ).strip()
+        clean = re.sub(r"^(it\s+)?(contains|is\s+made\s+of|uses|combines)\s+", "", clean, flags=re.IGNORECASE).strip()
+        clean = re.sub(r"^(we\s+use|i\s+use|formulated\s+with)\s+", "", clean, flags=re.IGNORECASE).strip()
+
+        parts = re.split(r"[,;\n\r•\+\&]+|\band\b", clean, flags=re.IGNORECASE)
+        ingredients = []
+        for p in parts:
+            item = p.strip(" .!?:;-")
+            item = re.sub(r"^(a\s+|an\s+|the\s+|some\s+)", "", item, flags=re.IGNORECASE).strip()
+            if len(item) >= 2 and item.lower() not in [
+                "and", "with", "etc", "none", "nothing", "also", "in", "specific", "ratio", "formulation"
+            ]:
+                ingredients.append(item.title())
+        return _dedupe_preserve_order(ingredients)
+
+    @classmethod
+    def _extract_jurisdictions_from_text(cls, text: str) -> List[str]:
         lower = text.lower()
+        found = []
+        for k, v in _EXPANDED_JURISDICTIONS.items():
+            if re.search(rf"\b{k}\b", lower):
+                if v not in found:
+                    found.append(v)
+        return found
+
+    @classmethod
+    def _extract_tk_basis(cls, text: str) -> Optional[TKBasis]:
+        lower = text.lower().strip()
+        if not lower:
+            return None
         if any(re.search(p, lower) for p in _TK_NONE_PATTERNS):
             return TKBasis.NONE
         if any(re.search(p, lower) for p in _TK_CLASSICAL_PATTERNS):
@@ -291,12 +426,30 @@ class InnovationIntakeAgent:
             profile.product_type = product_kw
             cls._mark(profile, "product_type")
 
+        # Opportunistic extraction across turns
+        if profile.primary_ip_objective is None:
+            obj = cls._extract_ip_objective(message)
+            if obj is not None:
+                cls._add_ip_objective(profile, obj)
+
+        if profile.tk_basis == TKBasis.UNKNOWN:
+            tk = cls._extract_tk_basis(message)
+            if tk is not None:
+                profile.tk_basis = tk
+                cls._mark(profile, "tk_basis")
+
         # 2. Attribute the raw answer to the field we asked about (if any).
         pending_field = intake_state.pending_field
-        if pending_field == "primary_ip_objective" and profile.primary_ip_objective is None:
-            # User answered in free text without a recognizable IP keyword — leave for the
-            # keyword scan above; nothing further to attribute for an enum field.
-            pass
+        if pending_field == "primary_ip_objective":
+            if profile.primary_ip_objective is None:
+                obj = cls._extract_ip_objective(message)
+                if obj is not None:
+                    cls._add_ip_objective(profile, obj)
+                elif any(w in message.lower() for w in ["both", "all", "everything"]):
+                    cls._add_ip_objective(profile, IPObjective.PATENT)
+                    cls._add_ip_objective(profile, IPObjective.TRADEMARK)
+                elif not any(w in message.lower() for w in ["not sure", "don't know", "what do you mean"]):
+                    cls._add_ip_objective(profile, IPObjective.PATENT)
         elif pending_field == "short_description" and not profile.short_description:
             profile.short_description = message
             cls._mark(profile, "short_description")
@@ -308,6 +461,14 @@ class InnovationIntakeAgent:
             cls._mark(profile, "claimed_novelty")
         elif pending_field == "tk_basis":
             tk = cls._extract_tk_basis(message)
+            if tk is None:
+                lower_msg = message.lower().strip()
+                if any(w in lower_msg for w in ["my", "i", "we", "lab", "new", "made", "secret", "recipe", "balm"]):
+                    tk = TKBasis.NONE
+                elif any(w in lower_msg for w in ["yes", "samhita", "old", "book", "classical"]):
+                    tk = TKBasis.CLASSICAL_TEXT
+                elif not any(k in lower_msg for k in ["not sure", "don't know", "what do you mean"]):
+                    tk = TKBasis.NONE
             if tk is not None:
                 profile.tk_basis = tk
                 cls._mark(profile, "tk_basis")
@@ -315,11 +476,22 @@ class InnovationIntakeAgent:
                 profile.traditional_use_description = message
                 cls._mark(profile, "traditional_use_description")
         elif pending_field == "ingredients":
-            # Structured extraction already ran above; nothing further to attribute.
-            pass
+            extracted = cls._extract_ingredients_from_text(message)
+            if extracted:
+                profile.ingredients = _dedupe_preserve_order(profile.ingredients + extracted)
+                cls._mark(profile, "ingredients")
+            elif not profile.ingredients and message.strip() and not any(k in message.lower() for k in ["not sure", "don't know"]):
+                profile.ingredients = [message.strip().title()]
+                cls._mark(profile, "ingredients")
         elif pending_field == "target_jurisdictions":
-            # Structured extraction already ran above; nothing further to attribute.
-            pass
+            found = cls._extract_jurisdictions_from_text(message)
+            if found:
+                profile.target_jurisdictions = _dedupe_preserve_order(profile.target_jurisdictions + found)
+                cls._mark(profile, "target_jurisdictions")
+            elif not profile.target_jurisdictions and message.strip() and not any(k in message.lower() for k in ["not sure", "don't know"]):
+                clean_j = [p.strip().upper() for p in re.split(r"[,;\n]+|\band\b", message) if len(p.strip()) >= 2]
+                profile.target_jurisdictions = clean_j or [message.strip().upper()]
+                cls._mark(profile, "target_jurisdictions")
         elif pending_field == "development_stage" and profile.development_stage == DevelopmentStage.UNKNOWN:
             stage = cls._extract_development_stage(message)
             if stage is not None:

@@ -11,12 +11,18 @@ import os
 import re
 import hashlib
 import logging
+import threading
+from pathlib import Path
 from typing import List, Optional
 from qdrant_client import QdrantClient
 from qdrant_client.http import models as qmodels
 from ml_pipeline.crag.schema import LegalChunk, JurisdictionType, ProvenanceStatus, IPType
 
 logger = logging.getLogger("vector_store_manager")
+
+# Process-level cache for local Qdrant clients to avoid file-lock conflicts (portalocker)
+_client_cache: dict[str, QdrantClient] = {}
+_client_lock = threading.Lock()
 
 
 class EmbeddingProvider:
@@ -68,10 +74,20 @@ class EmbeddingProvider:
         """
         Embeds a batch of texts.
         - input_type='search_document'  for indexing chunks
-        - input_type='search_query'     for embedding user queries
+        - input_type='search_query'     for user search queries (asymmetric retrieval)
         """
-        if self._cohere_client:
-            return self._embed_cohere(texts, input_type)
+        if self.using_semantic:
+            try:
+                response = self._cohere_client.embed(
+                    texts=texts,
+                    model=self._model,
+                    input_type=input_type,
+                    embedding_types=["float"]
+                )
+                return response.embeddings.float_
+            except Exception as e:
+                logger.warning(f"Cohere embed API failed: {e}. Falling back to hash embeddings.")
+
         return [self._hash_embed(t) for t in texts]
 
     def embed_query(self, query: str) -> List[float]:
@@ -79,41 +95,16 @@ class EmbeddingProvider:
         results = self.embed_texts([query], input_type="search_query")
         return results[0]
 
-    def _embed_cohere(self, texts: List[str], input_type: str) -> List[List[float]]:
-        """Calls Cohere Embed v3 API in batches of 96 (API limit is 96 texts/request)."""
-        all_embeddings: List[List[float]] = []
-        batch_size = 96
-
-        for i in range(0, len(texts), batch_size):
-            batch = texts[i : i + batch_size]
-            try:
-                response = self._cohere_client.embed(
-                    texts=batch,
-                    model=self._model,
-                    input_type=input_type,
-                    embedding_types=["float"]
-                )
-                all_embeddings.extend(response.embeddings.float_)
-            except Exception as e:
-                logger.error(f"Cohere embed API error: {e}. Falling back to hash embedding for this batch.")
-                all_embeddings.extend([self._hash_embed(t) for t in batch])
-
-        return all_embeddings
-
     def _hash_embed(self, text: str) -> List[float]:
-        """
-        Offline hash-based pseudo-embedding (deterministic, for tests/dev).
-        Produces a normalized HASH_DIM-dimensional float vector.
-        """
-        vector = [0.0] * self.HASH_DIM
-        words = text.lower().split()
-        if not words:
-            return vector
-        for word in words:
-            h = int(hashlib.md5(word.encode("utf-8")).hexdigest(), 16)
-            vector[h % self.HASH_DIM] += 1.0
-        norm = sum(x * x for x in vector) ** 0.5
-        return [x / norm for x in vector] if norm > 0 else vector
+        """Deterministic pseudo-embedding for offline tests/dev."""
+        norm_text = text.lower().strip()
+        vector = []
+        for i in range(self.HASH_DIM):
+            h = hashlib.sha256(f"{norm_text}_{i}".encode()).hexdigest()
+            val = (int(h[:8], 16) / 0xFFFFFFFF) * 2.0 - 1.0
+            vector.append(val)
+        norm = sum(v * v for v in vector) ** 0.5
+        return [v / norm for v in vector] if norm > 0 else vector
 
 
 class VectorStoreManager:
@@ -123,19 +114,47 @@ class VectorStoreManager:
 
     COLLECTION_NAME = "ayurveda_ip_corpus"
 
-    def __init__(self, location: Optional[str] = None, collection_name: Optional[str] = None):
+    def __init__(self, location: Optional[str] = None, collection_name: Optional[str] = None, path: Optional[str] = None):
         self.collection_name = collection_name or self.COLLECTION_NAME
         self.embedder = EmbeddingProvider()
 
         qdrant_url = os.getenv("QDRANT_URL")
+        target_path = path or os.getenv("QDRANT_STORAGE_PATH", "data/qdrant_db")
+
         if location:
             self.client = QdrantClient(location=location)
         elif qdrant_url:
             self.client = QdrantClient(url=qdrant_url)
-        else:
+        elif "PYTEST_CURRENT_TEST" in os.environ and not path and not os.getenv("QDRANT_STORAGE_PATH"):
+            # Isolated in-memory client for test runs
             self.client = QdrantClient(":memory:")
+        else:
+            if not Path(target_path).is_absolute():
+                project_root = Path(__file__).resolve().parent.parent.parent
+                abs_path = str((project_root / target_path).resolve())
+            else:
+                abs_path = str(Path(target_path).resolve())
+            Path(abs_path).mkdir(parents=True, exist_ok=True)
+            with _client_lock:
+                if abs_path not in _client_cache:
+                    try:
+                        _client_cache[abs_path] = QdrantClient(path=abs_path)
+                    except Exception as exc:
+                        logger.warning(
+                            "Persistent Qdrant locked or unavailable at %s (%s). Falling back to in-memory store.",
+                            abs_path, exc
+                        )
+                        _client_cache[abs_path] = QdrantClient(":memory:")
+                self.client = _client_cache[abs_path]
 
         self._ensure_collection()
+
+    def count(self) -> int:
+        """Returns total number of points in the collection, or 0 if empty/non-existent."""
+        try:
+            return self.client.count(collection_name=self.collection_name).count
+        except Exception:
+            return 0
 
     def _ensure_collection(self):
         """Creates collection with correct vector dimension, recreating if dim changed."""

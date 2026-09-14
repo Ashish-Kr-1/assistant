@@ -8,6 +8,8 @@ export default function ChatTopbar({
   onJurisdictionChange,
   theme,
   onToggleTheme,
+  mode = "query",
+  onModeChange,
 }) {
   return (
     <div className={styles.chatTopbar}>
@@ -28,6 +30,29 @@ export default function ChatTopbar({
           </div>
         </div>
       )}
+
+      {/* 2 Main Operation Modes: 1. Query (Default) | 2. Deep Research */}
+      <div className={`${styles.modeToggle} ${styles.nmInset}`}>
+        <button
+          type="button"
+          className={`${styles.modeBtn} ${mode === "query" ? styles.activeQuery : ""}`}
+          onClick={() => onModeChange?.("query")}
+          title="Direct AI Legal Q&A with statutory citations"
+        >
+          <span className={styles.modeIcon}>💬</span>
+          <span>Query</span>
+        </button>
+        <button
+          type="button"
+          className={`${styles.modeBtn} ${mode === "deep_research" ? styles.activeDeepResearch : ""}`}
+          onClick={() => onModeChange?.("deep_research")}
+          title="Comprehensive Innovation Intake, Assessment & Deep Research Report"
+        >
+          <span className={styles.modeIcon}>🔬</span>
+          <span>Deep Research</span>
+        </button>
+      </div>
+
       <div className={`${styles.jurisdictionToggle} ${styles.nmInset}`}>
         <button
           type="button"

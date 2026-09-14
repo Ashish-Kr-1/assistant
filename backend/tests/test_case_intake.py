@@ -332,3 +332,42 @@ def test_patch_updates_merge_and_reach_ready():
     data = r.json()
     assert data["status"] == "READY_FOR_RESEARCH"
     assert "Ashwagandha" in data["profile"]["ingredients"]  # prior fields preserved through PATCH
+
+
+# ── 22. Shorthand & conversational replies (e.g. "own", "mine") ──────────
+
+def test_shorthand_and_colloquial_intake_responses():
+    case = create_case()
+    case_id = case["case_id"]
+
+    # 1. Patent objective
+    r1 = intake(case_id, "I want help with a patent")
+    assert r1["profile"]["primary_ip_objective"] == "PATENT"
+
+    # 2. Description
+    r2 = intake(case_id, "it is a pain relief balm for joint pain")
+    assert "balm" in r2["profile"]["short_description"].lower()
+    assert r2["profile"]["product_type"] == "BALM"
+
+    # 3. Novelty
+    r3 = intake(case_id, "novel extraction process of active herbal ingredients")
+    assert "extraction" in r3["profile"]["claimed_novelty"].lower()
+    assert "classical" in r3["next_question"].lower()
+
+    # 4. TK basis answered with single shorthand word "own"
+    r4 = intake(case_id, "own")
+    assert r4["profile"]["tk_basis"] == "NONE"
+    # 5. Non-botanical/OTC ingredients
+    r5 = intake(case_id, "camphor, menthol, clove oil and eucalyptus")
+    assert "Camphor" in r5["profile"]["ingredients"]
+    assert "Menthol" in r5["profile"]["ingredients"]
+    assert any("clove" in ing.lower() for ing in r5["profile"]["ingredients"])
+    assert any("eucalyptus" in ing.lower() for ing in r5["profile"]["ingredients"])
+    assert "countries" in r5["next_question"].lower() or "markets" in r5["next_question"].lower()
+
+    # 6. Expanded jurisdictions
+    r6 = intake(case_id, "Singapore, UK and India")
+    assert r6["ready_for_research"] is True
+    assert r6["status"] == "READY_FOR_RESEARCH"
+    assert set(r6["profile"]["target_jurisdictions"]) == {"SINGAPORE", "UK", "INDIA"}
+

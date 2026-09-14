@@ -88,6 +88,55 @@
   letter-spacing: 0.02em;
 }
 
+/* ---------- 2 Main Operation Modes (Query vs Deep Research) ---------- */
+
+.modeToggle {
+  display: flex;
+  border-radius: 14px;
+  padding: 4px;
+  gap: 4px;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.modeBtn {
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text-muted);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  transition: all 180ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modeBtn:hover {
+  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.modeIcon {
+  font-size: 14px;
+}
+
+.modeBtn.activeQuery {
+  background: linear-gradient(135deg, #2b6cb0, #2c5282);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(43, 108, 176, 0.35), inset 1px 1px 2px rgba(255, 255, 255, 0.2);
+}
+
+.modeBtn.activeDeepResearch {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.35), inset 1px 1px 2px rgba(255, 255, 255, 0.2);
+}
+
 .jurisdictionToggle {
   margin-left: auto;
   display: flex;

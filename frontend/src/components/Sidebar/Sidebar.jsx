@@ -1,6 +1,7 @@
 import styles from "./Sidebar.module.css"
 import { LogoutIcon } from "../Icons/Icons"
 import { Link } from "react-router-dom"
+import BackendTerminal from "../BackendTerminal/BackendTerminal"
 
 export default function Sidebar({
   isOpen,
@@ -11,6 +12,9 @@ export default function Sidebar({
   activeChatId,
   onSelectChat,
   currentUser,
+  terminalLogs = [],
+  isTyping = false,
+  onClearTerminal,
 }) {
   return (
     <aside
@@ -42,6 +46,12 @@ export default function Sidebar({
           </button>
         ))}
       </nav>
+
+      <BackendTerminal
+        logs={terminalLogs}
+        isRunning={isTyping}
+        onClear={onClearTerminal}
+      />
 
       <div className={styles.sidebarFooter}>
         <div className={styles.profileRow}>

@@ -36,7 +36,9 @@ class IntentRuleEngine:
 
     BOTANICAL_NAMES = [
         "ashwagandha", "turmeric", "curcuma", "withania", "neem", "guggulu",
-        "tulsi", "triphala", "amla", "brahmi", "shatavari", "sarpagandha"
+        "tulsi", "triphala", "amla", "brahmi", "shatavari", "sarpagandha",
+        "menthol", "camphor", "clove", "eucalyptus", "ginger", "cinnamon",
+        "cardamom", "pudina", "karpoor", "lavang", "nilgiri", "wintergreen"
     ]
 
     JURISDICTIONS_MAP = {
@@ -50,7 +52,18 @@ class IntentRuleEngine:
         "japan": "JAPAN",
         "india": "INDIA",
         "australia": "AUSTRALIA",
-        "canada": "CANADA"
+        "canada": "CANADA",
+        "singapore": "SINGAPORE",
+        "uae": "UAE",
+        "dubai": "UAE",
+        "china": "CHINA",
+        "brazil": "BRAZIL",
+        "france": "FRANCE",
+        "switzerland": "SWITZERLAND",
+        "new zealand": "NEW ZEALAND",
+        "global": "GLOBAL",
+        "worldwide": "GLOBAL",
+        "international": "GLOBAL"
     }
 
     @classmethod
@@ -174,6 +187,24 @@ class IntentRuleEngine:
         ]
         if any(re.search(p, lower) for p in ip_protection_patterns):
             entities = cls._extract_entities(lower)
+            # If the user is asking for steps, procedure, requirements, or how the process works,
+            # this is a procedural legal inquiry and should be answered directly by the research engine.
+            procedural_signals = [
+                "step", "steps", "procedure", "process", "how to", "how do", "how can",
+                "process of", "guide", "guidelines", "requirements", "what are the",
+                "can you explain", "explain the", "kya steps", "kaise kare", "kya process"
+            ]
+            if any(sig in lower for sig in procedural_signals):
+                return IntentResult(
+                    intent=Intent.LEGAL_QA,
+                    confidence=0.95,
+                    route=Route.CRAG,
+                    entities=entities,
+                    requires_case=False,
+                    needs_clarification=False,
+                    method="RULE"
+                )
+
             if "trademark" in lower:
                 entities.ip_type = "TRADEMARK"
                 entities.requested_action = "TRADEMARK_PROTECTION"

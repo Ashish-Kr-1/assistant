@@ -25,9 +25,15 @@ def get_crag_pipeline() -> CRAGPipeline:
         with _lock:
             if _pipeline_instance is None:
                 logger.info("Initializing shared CRAG pipeline...")
-                from scripts.seed_corpus import get_foundational_corpus
                 manager = VectorStoreManager()
-                corpus = get_foundational_corpus()
-                manager.index_chunks(corpus)
+                current_count = manager.count()
+                if current_count >= 38:
+                    logger.info(f"Qdrant collection '{manager.collection_name}' already contains {current_count} chunks. Skipping corpus scraping and indexing (<5ms startup).")
+                else:
+                    logger.info(f"Qdrant collection contains {current_count} chunks. Seeding foundational corpus...")
+                    from scripts.seed_corpus import get_foundational_corpus
+                    corpus = get_foundational_corpus()
+                    manager.index_chunks(corpus)
                 _pipeline_instance = CRAGPipeline(vector_store=manager)
     return _pipeline_instance
+

@@ -12,6 +12,7 @@ export default function Composer({
   isTyping,
   language,
   onLanguageChange,
+  placeholder,
 }) {
   const [isListening, setIsListening] = useState(false)
 
@@ -31,7 +32,7 @@ export default function Composer({
           ) : (
             <textarea
               rows={1}
-              placeholder="Ask about IP protection, ABS duties, or classification…"
+              placeholder={placeholder || "Ask about IP protection, ABS duties, or classification…"}
               value={draft}
               onChange={(e) => onDraftChange(e.target.value)}
               onKeyDown={onKeyDown}

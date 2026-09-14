@@ -11,6 +11,11 @@ from langchain_core.language_models import BaseChatModel
 
 logger = logging.getLogger("llm_factory")
 
+# Hackathon demo reliability (Section 39/35): a live LLM call must never hang the
+# request indefinitely. If the provider doesn't respond in time, the caller's
+# existing try/except falls back to deterministic heuristics rather than blocking.
+LLM_TIMEOUT_SECONDS = float(os.getenv("LLM_TIMEOUT_SECONDS", "12"))
+
 
 def get_llm(temperature: float = 0.0, preferred_model: Optional[str] = None) -> Optional[BaseChatModel]:
     """
@@ -35,7 +40,8 @@ def get_llm(temperature: float = 0.0, preferred_model: Optional[str] = None) -> 
             return ChatCohere(
                 model=model,
                 temperature=temperature,
-                cohere_api_key=cohere_key
+                cohere_api_key=cohere_key,
+                timeout_seconds=LLM_TIMEOUT_SECONDS,
             )
         except Exception as e:
             logger.error(f"Failed to initialize ChatCohere: {e}")
@@ -54,7 +60,8 @@ def get_llm(temperature: float = 0.0, preferred_model: Optional[str] = None) -> 
             return ChatOpenAI(
                 model=model,
                 temperature=temperature,
-                api_key=openai_key
+                api_key=openai_key,
+                timeout=LLM_TIMEOUT_SECONDS,
             )
         except Exception as e:
             logger.error(f"Failed to initialize ChatOpenAI: {e}")
@@ -73,7 +80,8 @@ def get_llm(temperature: float = 0.0, preferred_model: Optional[str] = None) -> 
             return ChatGoogleGenerativeAI(
                 model=model,
                 temperature=temperature,
-                google_api_key=gemini_key
+                google_api_key=gemini_key,
+                timeout=LLM_TIMEOUT_SECONDS,
             )
         except Exception as e:
             logger.error(f"Failed to initialize ChatGoogleGenerativeAI: {e}")

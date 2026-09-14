@@ -8,28 +8,12 @@ from app.core.config import settings
 from app.core.r6_consent_guard import R6ConsentGuard
 from app.db.session import get_db
 from app.services.case_service import CaseService
-from ml_pipeline.crag.graph import CRAGPipeline
-from ml_pipeline.embeddings.vector_store_manager import VectorStoreManager
 from ml_pipeline.schemas.intent_schema import Route
 from ml_pipeline.classifier.intent_classifier import IntentClassifier
-from scripts.seed_corpus import get_foundational_corpus
+from ml_pipeline.crag.pipeline_singleton import get_crag_pipeline
 
 logger = logging.getLogger("query_api")
 router = APIRouter()
-
-# Global cached CRAG pipeline instance
-_pipeline_instance: CRAGPipeline = None
-
-
-def get_crag_pipeline() -> CRAGPipeline:
-    global _pipeline_instance
-    if _pipeline_instance is None:
-        logger.info("Initializing CRAG pipeline for FastAPI backend...")
-        manager = VectorStoreManager()
-        corpus = get_foundational_corpus()
-        manager.index_chunks(corpus)
-        _pipeline_instance = CRAGPipeline(vector_store=manager)
-    return _pipeline_instance
 
 
 @router.post("/query", response_model=QueryResponse)

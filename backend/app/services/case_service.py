@@ -52,6 +52,8 @@ def _to_domain(row: CaseORM) -> Case:
         updated_at=row.updated_at,
         profile=InnovationProfile.model_validate(row.profile or {}),
         intake_state=IntakeState.model_validate(row.intake_state or {}),
+        assessment=row.assessment,  # Phase 3 — raw dict or None
+        research_report=row.research_report,  # Phase 4 — raw dict or None
     )
 
 
@@ -60,6 +62,10 @@ def _persist(db: Session, row: CaseORM, case: Case) -> CaseORM:
     row.status = case.status.value
     row.profile = case.profile.model_dump(mode="json")
     row.intake_state = case.intake_state.model_dump(mode="json")
+    if case.assessment is not None:
+        row.assessment = case.assessment
+    if case.research_report is not None:
+        row.research_report = case.research_report
     db.add(row)
     db.commit()
     db.refresh(row)
@@ -230,6 +236,16 @@ class CaseService:
 
         if case.intake_state.status == IntakeStatus.READY:
             case.status = CaseStatus.READY_FOR_RESEARCH
+            # Phase 3: Run assessment automatically once case is ready.
+            # This is synchronous and deterministic (no LLM, no Qdrant).
+            if case.assessment is None:
+                try:
+                    from ml_pipeline.agents.case_assessment_agent import CaseAssessmentAgent
+                    assessment = CaseAssessmentAgent.assess(case.case_id, case.profile)
+                    case.assessment = assessment.model_dump(mode="json")
+                    logger.info("Phase 3: assessment stored for case %s", case.case_id)
+                except Exception as exc:
+                    logger.error("Phase 3: assessment failed for case %s: %s", case.case_id, exc)
         else:
             case.status = CaseStatus.INTAKE_IN_PROGRESS
 
@@ -266,5 +282,76 @@ class CaseService:
             if case.intake_state.status == IntakeStatus.READY
             else CaseStatus.INTAKE_IN_PROGRESS
         )
+        # Phase 3: re-run assessment after PATCH if case is now ready.
+        if case.status == CaseStatus.READY_FOR_RESEARCH and case.assessment is None:
+            try:
+                from ml_pipeline.agents.case_assessment_agent import CaseAssessmentAgent
+                assessment = CaseAssessmentAgent.assess(case.case_id, case.profile)
+                case.assessment = assessment.model_dump(mode="json")
+                logger.info("Phase 3 (PATCH): assessment stored for case %s", case.case_id)
+            except Exception as exc:
+                logger.error("Phase 3 (PATCH): assessment failed for case %s: %s", case.case_id, exc)
+        _persist(db, row, case)
+        return case
+
+    @staticmethod
+    def assess_case(db: Session, case_id: str, user_id: str) -> Case:
+        """
+        Explicitly trigger or re-run Phase 3 assessment for a READY_FOR_RESEARCH case.
+        Idempotent — can be called multiple times (overwrites prior assessment).
+        """
+        row = db.query(CaseORM).filter(CaseORM.case_id == case_id).first()
+        if row is None:
+            raise CaseNotFoundError(case_id)
+        if row.user_id != user_id:
+            raise CaseAccessDeniedError(case_id)
+
+        case = _to_domain(row)
+        if case.status == CaseStatus.INTAKE_IN_PROGRESS:
+            # Best-effort: run even if intake isn't fully complete (partial assessment).
+            logger.warning("Phase 3: running assessment on INTAKE_IN_PROGRESS case %s", case_id)
+
+        from ml_pipeline.agents.case_assessment_agent import CaseAssessmentAgent
+        assessment = CaseAssessmentAgent.assess(case.case_id, case.profile)
+        case.assessment = assessment.model_dump(mode="json")
+        logger.info("Phase 3 (explicit): assessment stored for case %s", case_id)
+        _persist(db, row, case)
+        return case
+
+    @staticmethod
+    def run_research(db: Session, case_id: str, user_id: str) -> Case:
+        """
+        Phase 4 — Executes the Research Engine: runs every Phase 3
+        recommended_crag_query through the CRAG pipeline (Qdrant + CRAG
+        grading/verification/abstention), aggregates evidence and risk, and
+        assembles a structured, source-cited preliminary report.
+
+        Requires a completed Phase 3 assessment (auto-runs it first if missing).
+        Idempotent — re-running overwrites the prior report.
+        """
+        row = db.query(CaseORM).filter(CaseORM.case_id == case_id).first()
+        if row is None:
+            raise CaseNotFoundError(case_id)
+        if row.user_id != user_id:
+            raise CaseAccessDeniedError(case_id)
+
+        case = _to_domain(row)
+
+        from ml_pipeline.schemas.assessment_schema import CaseAssessment
+        from ml_pipeline.agents.case_assessment_agent import CaseAssessmentAgent
+        from ml_pipeline.agents.research_engine import ResearchEngine
+        from ml_pipeline.crag.pipeline_singleton import get_crag_pipeline
+
+        if case.assessment is None:
+            logger.info("Phase 4: no Phase 3 assessment yet for case %s — running it first.", case_id)
+            assessment_obj = CaseAssessmentAgent.assess(case.case_id, case.profile)
+            case.assessment = assessment_obj.model_dump(mode="json")
+        else:
+            assessment_obj = CaseAssessment.model_validate(case.assessment)
+
+        engine = ResearchEngine(pipeline=get_crag_pipeline())
+        report = engine.run(case.case_id, case.profile, assessment_obj)
+        case.research_report = report.model_dump(mode="json")
+        logger.info("Phase 4: research report stored for case %s", case_id)
         _persist(db, row, case)
         return case

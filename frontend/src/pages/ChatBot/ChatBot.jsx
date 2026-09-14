@@ -162,6 +162,25 @@ export default function ChatBot() {
 
       if (!isMountedRef.current) return
 
+      // Phase 3: if the case just became ready, fetch the assessment to show in-chat.
+      let assessment = null
+      let followUps = undefined
+      if (data.case_id && data.ready_for_research) {
+        try {
+          const caseResp = await api.get(`/cases/${data.case_id}`, {
+            params: { user_id: "anonymous_user" },
+          })
+          if (caseResp.data?.assessment?.assessment_status === "COMPLETED") {
+            assessment = caseResp.data.assessment
+            // Generate contextual follow-up suggestions from the research plan
+            const queries = assessment.research_plan?.recommended_crag_queries || []
+            followUps = queries.slice(0, 3)
+          }
+        } catch (_) {
+          // Non-fatal: assessment fetch can fail without breaking the chat
+        }
+      }
+
       setMessages((prev) => [
         ...prev,
         {
@@ -171,6 +190,9 @@ export default function ChatBot() {
           citations: citationLabels(data.citations),
           confidence: confidenceLabel(data.confidence_level),
           escalate: data.escalate_to_human,
+          assessment,   // Phase 3 assessment panel (null if not yet ready)
+          caseId: data.case_id,
+          followUps,
         },
       ])
 
@@ -180,6 +202,7 @@ export default function ChatBot() {
           status: data.case_status,
           readyForResearch: Boolean(data.ready_for_research),
           missingInformation: data.missing_information || [],
+          hasAssessment: Boolean(assessment),
         })
       }
     } catch (err) {
@@ -187,6 +210,39 @@ export default function ChatBot() {
       setMessages((prev) => [
         ...prev,
         { id: `a-${Date.now()}`, role: "assistant", text: err.message || GENERIC_ERROR_REPLY },
+      ])
+    } finally {
+      if (isMountedRef.current) setIsTyping(false)
+    }
+  }
+
+  async function handleGenerateReport(caseId, messageId) {
+    setIsTyping(true)
+    setMessages((prev) =>
+      prev.map((m) => (m.id === messageId ? { ...m, reportRequested: true } : m))
+    )
+    try {
+      // Phase 4 runs several CRAG retrieval calls sequentially, so give it more
+      // headroom than the default request timeout.
+      const { data } = await api.post(`/cases/${caseId}/report`, null, {
+        params: { user_id: "anonymous_user" },
+        timeout: 90_000,
+      })
+      if (!isMountedRef.current) return
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === messageId ? { ...m, report: data.research_report, reportRequested: true } : m
+        )
+      )
+    } catch (err) {
+      if (!isMountedRef.current) return
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `a-${Date.now()}`,
+          role: "assistant",
+          text: err.message || "Couldn't generate the research report just now. Please try again.",
+        },
       ])
     } finally {
       if (isMountedRef.current) setIsTyping(false)
@@ -231,13 +287,16 @@ export default function ChatBot() {
           messages={messages}
           isTyping={isTyping}
           onFollowUpClick={handleSend}
+          onGenerateReport={handleGenerateReport}
           scrollRef={scrollRef}
         />
 
         {activeCase && (
           <div className={styles.caseStatusBar}>
             Case {activeCase.caseId} —{" "}
-            {activeCase.readyForResearch
+            {activeCase.hasAssessment
+              ? "✓ Phase 3 assessment complete"
+              : activeCase.readyForResearch
               ? "ready for research"
               : `intake in progress${
                   activeCase.missingInformation.length

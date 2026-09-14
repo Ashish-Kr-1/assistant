@@ -25,9 +25,13 @@ class CaseORM(Base):
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc),
                          onupdate=lambda: datetime.now(timezone.utc))
 
-    # JSON-serialized InnovationProfile / IntakeState (Pydantic .model_dump(mode="json")).
+    # JSON-serialized InnovationProfile / IntakeState / CaseAssessment (Pydantic .model_dump(mode="json")).
     profile = Column(JSON, nullable=False, default=dict)
     intake_state = Column(JSON, nullable=False, default=dict)
+    # Phase 3 — Innovation Classification & Legal Domain Mapping output (nullable until assessed).
+    assessment = Column(JSON, nullable=True, default=None)
+    # Phase 4 — Research Engine / structured report output (nullable until research is run).
+    research_report = Column(JSON, nullable=True, default=None)
 
     __table_args__ = (
         Index("ix_cases_user_conversation", "user_id", "conversation_id"),

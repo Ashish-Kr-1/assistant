@@ -35,29 +35,48 @@ Standard generative AI tools (generic LLMs) represent a catastrophic liability i
 
 ### 1.3 The Solution: IP-SAKTI Sahayak
 **IP-SAKTI Sahayak** is an authoritative, zero-hallucination, multilingual, Corrective Retrieval-Augmented Generation (CRAG) AI assistant engineered to resolve these challenges. It guarantees:
-- **100% Real Statutory Ingestion (Option B Mandate)**: Zero synthetic law, zero hand-typed fallback text, zero `text_override`. All legal chunks are dynamically scraped from Indian Kanoon, WTO, CBD, WIPO, and official gazette compendiums.
+- **100% Real Statutory Ingestion**: Zero synthetic law, zero hand-typed fallback text, zero `text_override`. All legal chunks are dynamically scraped from Indian Kanoon, WTO, CBD, WIPO, and official gazette compendiums.
 - **Code-Enforced Legal Guardrails (Rules R1–R10)**: Non-negotiable programmatic constraints that enforce safe abstention, zero uncited claims, sentence entailment verification, jurisdiction separation, paid-source consent, provenance tracking, and classification gating.
 - **Canonical Single Source of Truth**: Centralized formulation taxonomy and compendium of 71 authoritative Ayurvedic texts.
 - **Defensive Prior-Art Pointers**: Directs users to the Traditional Knowledge Digital Library (TKDL) via bilateral patent office NDAs without improperly leaking confidential databases into generative context.
 
 ---
 
-## 2. What Has Been Done (Architecture & Completed Implementations)
+## 2. End-to-End System Architecture
 
 ```
                                   USER QUERY
                                       │
-                   ┌──────────────────┴──────────────────┐
-                   ▼                                     ▼
-        Formulation Classification             General Legal Query
-         (Classical, P&P, Phyto,                         │
-          Ayurveda Aahar, Cosmetic)                      │
-                   │                                     │
-                   └──────────────────┬──────────────────┘
+                                      ▼
+                        Phase 1: Intent & Entity Classifier
+                      (11 Intents, Entity Extraction, Routing)
+                                      │
+              ┌───────────────────────┴───────────────────────┐
+              ▼                                               ▼
+     [INNOVATION_INTAKE]                               [LEGAL_QUERY / DIRECT]
+              │                                               │
+              ▼                                               │
+   Phase 2: Innovation Intake Agent                           │
+  (Progressive Q&A, CaseORM, Profile)                         │
+              │                                               │
+              ▼                                               │
+   Phase 3: Case Assessment Agent                             │
+   (Deterministic 5-Subpart Mapping):                         │
+    - 3.1 Normalization & Completeness                        │
+    - 3.2 5-Tier Product Classification                       │
+    - 3.3 IP Domain & Section 3(p) Analysis                   │
+    - 3.4 Multi-Jurisdiction Regulatory Map                   │
+    - 3.5 Prioritized Research Plan                           │
+              │                                               │
+              ▼                                               │
+   Phase 4: Research Engine & Report Generator                │
+   (Executes Recommended Queries via CRAG)                    │
+              │                                               │
+              └───────────────────────┬───────────────────────┘
                                       │
                                       ▼
-                        Rule R6 Paid-Source Consent Guard
-                        (Blocks gated sources if consent=False)
+                      Rule R6 Paid-Source Consent Guard
+                      (Blocks gated sources if consent=False)
                                       │
                                       ▼
                              Hybrid Vector Search
@@ -94,92 +113,125 @@ Standard generative AI tools (generic LLMs) represent a catastrophic liability i
                                                         │
                                                         ▼
                                                  FINAL RESPONSE
-                                              (FastAPI / React UI)
+                                         - 16-Section Research Report
+                                         - Assessment Summary Panel
+                                         - Direct Grounded Legal Q&A
 ```
 
-### 2.1 Complete Statutory & International Treaty Ingestion (37 Verified Sources + 1 Defensive TKDL Pointer)
-All statutory texts are dynamically retrieved and cached (`ml_pipeline/corpus_ingestion/data/cache/`) without any artificial overrides:
-
-#### A. Indian National Statutes (Indian Kanoon & Official Compendiums)
-1. **The Patents Act, 1970 (as amended)**:
-   - `Section 3(p)`: Traditional Knowledge patent bar (`doc/874310/`).
-   - `Section 3(d)`: Enhanced therapeutic efficacy bar for known substances.
-   - `Section 3(e)`: Mere admixture aggregation bar.
-   - `Section 8`: Foreign patent filing declarations (Form 3 requirements).
-   - `Section 10(4)`: Specifications and disclosure of biological origin.
-   - `Section 10(4)(ii)`: Deposit of biological material with an International Depositary Authority (Budapest Treaty) & geographical origin disclosure.
-   - `Section 25`: Pre-grant and post-grant oppositions on traditional knowledge grounds.
-   - `Section 64`: Revocation of patents for non-disclosure or wrongful disclosure of geographic origin.
-2. **The Biological Diversity Act, 2002 & Amendment Act, 2023**:
-   - `Section 3`: Mandatory prior approval of NBA for foreign entities.
-   - `Section 4`: Restrictions on transfer of biological research results.
-   - `Section 6`: Mandatory prior approval of NBA before applying for IPR inside or outside India.
-   - `Section 19`: Applications to NBA for commercial utilization.
-   - `Section 21`: Determination of equitable benefit sharing.
-   - `Section 24`: Intimation to State Biodiversity Boards (SBB) & registered AYUSH practitioner exemptions.
-3. **The Drugs and Cosmetics Act, 1940 & Rules, 1945**:
-   - `Section 3(a)`: Statutory definition of Ayurvedic, Siddha, or Unani drugs.
-   - `Section 33EEB`: Regulation of manufacture for sale of Ayurvedic medicines.
-   - `Schedule T`: Good Manufacturing Practices (GMP) for ASU drugs.
-   - `Rule 158B`: Safety and efficacy protocols for Patent & Proprietary medicines.
-   - `Rule 122E`: Phytopharmaceutical regulatory pathway (CDSCO, minimum 4 bioactive markers).
-4. **Food Safety and Standards Act, 2006 & Regulations**:
-   - `Section 22`: Functional foods, nutraceuticals, and foods for special dietary uses.
-   - `FSSAI (Ayurveda Aahara) Regulations 2022 & Oct 2024 Compendium (USDA GAIN IN2022-0054)`: Regulation 3 definition, Schedule A 71 authoritative texts, mandatory logo, strict prohibition on synthetic vitamins/minerals, therapeutic claims, classical bhasmas, and cosmetics.
-5. **Intellectual Property Regimes**:
-   - `Trade Marks Act 1999`: Section 9 (Absolute grounds for refusal) & Section 11 (Relative grounds for refusal).
-   - `Geographical Indications of Goods Act 1999`: Section 2(1)(e) (GI statutory definition).
-   - `Protection of Plant Varieties and Farmers' Rights Act 2001`: Section 39 (Farmers' seed saving and breeding rights).
-6. **Traditional Knowledge Digital Library (TKDL) Pointer**:
-   - Modeled strictly as an external defensive prior-art reference under Rule R7 (`status=MOCK_PENDING_ACCESS`). Excluded from generative retrieval to honor CSIR non-disclosure agreements with 18 international patent offices.
-
-#### B. International Treaties (WTO, CBD, WIPO Official PDFs)
-1. **WIPO GRATK Treaty (Geneva, 2024)**:
-   - `Article 3`: Mandatory patent disclosure of genetic resources and local community traditional knowledge.
-   - `Article 4`: Non-retroactivity of disclosure obligations.
-   - `Article 5`: Sanctions, remedies, and opportunity for applicants to rectify non-fraudulent omissions.
-2. **WTO TRIPS Agreement (1995)**:
-   - `Article 27`: Patentable subject matter and allowable exclusions (diagnostic/therapeutic methods, plants/animals).
-   - `Article 28`: Exclusive rights conferred to patent holders.
-   - `Article 39`: Protection of undisclosed information and trade secrets.
-   - `Article 22`: Protection of Geographical Indications.
-3. **CBD Nagoya Protocol (2014)**:
-   - `Article 5`: Fair and equitable benefit-sharing on mutually agreed terms.
-   - `Article 6`: Prior Informed Consent (PIC) for access to genetic resources.
-   - `Article 7`: Prior Informed Consent for access to traditional knowledge.
-   - `Article 12`: Traditional knowledge compliance measures.
-4. **International Filing Treaties & Procedural Conventions**:
-   - **Budapest Treaty (1977/1980)**: Article 3 (Recognition of microorganism deposits with IDAs like MTCC/MCC).
-   - **Patent Cooperation Treaty (PCT)**: Article 3 (International application requirements).
-   - **Madrid Protocol (1989)**: Article 2 (International trademark registration).
-   - **Hague Agreement (Geneva Act 1999)**: Article 3 (International industrial design registration).
-
 ---
 
-### 2.2 Canonical Formulation Taxonomy & Single Source of Truth
-To prevent divergence between ML agents and backend API endpoints, [`ml_pipeline/agents/formulation_taxonomy.py`](file:///Users/ayushk/Desktop/assistant/ml_pipeline/agents/formulation_taxonomy.py) serves as the canonical registry:
-- **Taxonomy Categories**:
-  - `CLASSICAL_MEDICINE`: Triggers Section 3(p) absolute patent bar, Schedule T GMP, State AYUSH licensing, and TKDL defensive prior-art protection.
-  - `PROPRIETARY_MEDICINE`: Triggers Rule 158B proof of safety/efficacy, potential Section 3(d) (enhanced efficacy) and Section 3(e) (mere admixture) bars.
-  - `PHYTOPHARMACEUTICAL`: Regulated under CDSCO Rule 122E, requiring 4 bioactive markers and Phase I–III clinical trials; eligible for standard composition/process patents.
-  - `AYURVEDA_AAHAR`: Regulated under FSSAI 2022 Regulations, requiring authoritative text lineage; strictly prohibits therapeutic claims, synthetic additives, and classical bhasmas.
-  - `COSMETIC`: Regulated under Cosmetics Rules 2020 (Form 32 license, BIS standards, trademark/design focus).
-  - `AMBIGUOUS`: Flags incomplete submissions for guided clarification.
-- **Authoritative Ayurveda Texts**: Complete compendium of 71 recognized texts (Brihat Trayi, Laghu Trayi, Bhaishajya Ratnavali, Sahasrayoga, Ayurvedic Formulary of India, Ayurvedic Pharmacopoeia of India, etc.).
-- **Dual Classifiers**:
-  - `FormulationClassifierAgent` in `ml_pipeline/agents/classifier_agent.py`: Natural language classifier for free-form product descriptions.
-  - `AyurvedicFormulationClassifier` in `backend/app/services/classification_service.py`: Structured 5-point decision tree for interactive questionnaires.
+## 3. What Has Been Done (Completed Implementations by Phase)
 
----
+### 3.1 Phase 1 — Intent & Entity Classification Layer
+- **Architecture**: Dual-layer classifier combining fast, deterministic regex/keyword rule matching (`ml_pipeline/classifier/intent_rules.py`) with an LLM classifier (`ml_pipeline/classifier/intent_classifier.py`) enforcing strict Pydantic JSON schemas (`ml_pipeline/schemas/intent_schema.py`).
+- **11 Supported Intent Classes**:
+  1. `INNOVATION_INTAKE`: User describes a product, formulation, or invention for intake.
+  2. `CASE_STATUS`: Inquiries regarding active case progress or status.
+  3. `LEGAL_QUERY`: Direct questions on statutes (e.g., Section 3(p), Section 3(d), Section 6 BDA, WIPO GRATK).
+  4. `PATENTABILITY_ASSESSMENT`: Patent inquiries and novelty criteria.
+  5. `REGULATORY_GUIDANCE`: AYUSH, FSSAI Ayurveda Aahara, or CDSCO pathways.
+  6. `ABS_GUIDANCE`: Biodiversity Act, NBA approval, SBB intimation, and fee calculations.
+  7. `TRADEMARK_SEARCH`: Brand names, marks, distinctiveness under Trade Marks Act 1999.
+  8. `PRIOR_ART_SEARCH`: TKDL, patent novelty anticipation, prior published formulations.
+  9. `HUMAN_ESCALATION`: Requests for certified AYUSH patent attorney / IP facilitator.
+  10. `GREETING`: Polite greetings and conversational openers.
+  11. `OUT_OF_SCOPE`: Graceful deflection of questions unrelated to Ayurveda or IP.
+- **Entity Extraction**: Automatically extracts formulation name, botanical/herbal ingredients, therapeutic indications, target jurisdictions, development stage, applicant type, and prior art / TK basis.
+- **API Endpoint**: `POST /api/v1/intent/classify` with fallback mechanisms for offline testing.
+- **Test Coverage**: 40 unit and API tests (`ml_pipeline/tests/test_intent_classifier.py` and `backend/tests/test_intent_api.py`).
 
-### 2.3 Code-Enforced Legal Guardrails (Rules R1–R10)
+### 3.2 Phase 2 — Innovation Intake & Case Lifecycle Management
+- **Persistence Layer**: Multi-backend architecture supporting PostgreSQL (production) with automatic local SQLite fallback (`ipsakti_cases.db`) using SQLAlchemy ORM (`backend/app/db/models.py`).
+- **Domain Schemas**: `InnovationProfile`, `IntakeState`, `IntakeResponse`, `Case` (`ml_pipeline/schemas/case_schema.py`).
+- **Case Lifecycle State Machine**:
+  - `INTAKE_IN_PROGRESS`: Iterative intake gathering required fields.
+  - `READY_FOR_RESEARCH`: Minimum necessary fields gathered; auto-triggers Phase 3 assessment.
+  - `RESEARCH_COMPLETED`: Phase 4 preliminary research report compiled.
+  - `ESCALATED`: High-risk or complex case escalated for certified attorney review.
+- **Intake Agent (`InnovationIntakeAgent`)**:
+  - Progressive questioning strategy: Asks for one missing dimension at a time without overwhelming the user.
+  - Strict anti-hallucination: Never invents fields or ingredients; records provenance flags (`USER_STATED` vs `EXTRACTED_UNCONFIRMED`).
+  - Deduplication: Merges ingredients cleanly, preventing duplicates across multiple chat turns.
+- **REST Endpoints**:
+  - `POST /api/v1/cases`: Create a new innovation case for a conversation.
+  - `GET /api/v1/cases/active`: Retrieve active case associated with a conversation.
+  - `GET /api/v1/cases/{id}`: Fetch complete case data including profile, assessment, and research report.
+  - `POST /api/v1/cases/{id}/intake`: Process progressive intake messages.
+  - `PATCH /api/v1/cases/{id}`: Directly update or correct profile fields.
+- **Test Coverage**: 24 tests verifying progressive intake, ingredient accumulation, ownership security, and error handling (`backend/tests/test_case_intake.py`).
+
+### 3.3 Phase 3 — Innovation Classification & Legal Domain Mapping
+Fully deterministic, zero-LLM transformation pipeline (`ml_pipeline/agents/case_assessment_agent.py`) divided into exactly 5 subparts:
+1. **3.1 Case Normalization**:
+   - Validates and sanitizes `InnovationProfile`.
+   - Cleans ingredient strings and standardizes target jurisdictions into canonical ISO codes (`INDIA`, `USA`, `EU`, `UK`, `GERMANY`, `JAPAN`, `CANADA`, `AUSTRALIA`).
+   - Computes profile completeness score (`MINIMAL`, `PARTIAL`, `SUBSTANTIAL`, `COMPREHENSIVE`).
+2. **3.2 Product / Formulation Classification**:
+   - Maps innovation to the canonical 5-tier statutory taxonomy (`CLASSICAL_MEDICINE`, `PROPRIETARY_MEDICINE`, `PHYTOPHARMACEUTICAL`, `AYURVEDA_AAHAR`, `COSMETIC`, `AMBIGUOUS`).
+   - Cross-references against the complete compendium of 71 authoritative Ayurvedic texts (First Schedule of DCA 1940).
+   - Identifies mandatory regulatory triggers (Schedule T GMP, Rule 158B safety/efficacy evidence, Rule 122E with 4 bioactive markers, FSSAI 2022 prohibition on synthetic additives and therapeutic claims).
+3. **3.3 IP Domain Classification**:
+   - Rigorously evaluates patent bars:
+     - **Section 3(p)**: Triggered for classical formulations or known properties of traditional herbs.
+     - **Section 3(d)**: Evaluates whether enhancement of therapeutic efficacy is demonstrated.
+     - **Section 3(e)**: Flags mere admixture risks when combining known herbs.
+     - **Section 10(4)**: Flags mandatory biological source and geographic origin disclosure.
+     - **Budapest Treaty**: Flags biological material deposit requirements when microbial strains/fungi are involved.
+   - Secondary IP Regimes: Evaluates Trademark distinctiveness (Trade Marks Act 1999), Trade Secrets (TRIPS Art 39), and Plant Varieties (PPVFR Act 2001).
+   - TKDL Pointer: Flags defensive prior art reference without exposing non-public records.
+4. **3.4 Jurisdiction & Regulatory Mapping**:
+   - Maps target jurisdictions to their governing authorities (CDSCO, FDA CFSAN/CDER, EMA, MHRA, BfArM).
+   - Identifies Access & Benefit Sharing (ABS) mandates: India BDA 2023 NBA approval vs Nagoya Protocol due diligence for EU/Germany.
+5. **3.5 Research Plan Generation**:
+   - Generates prioritized research tasks (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`).
+   - Produces formulation-specific `recommended_crag_queries` for Phase 4 retrieval.
+- **REST Endpoints**:
+  - Automatically triggered upon case reaching `READY_FOR_RESEARCH`.
+  - `POST /api/v1/cases/{id}/assess`: Idempotent endpoint to trigger or re-run Phase 3 assessment.
+- **Test Coverage**: 23 tests verifying classification accuracy, Section 3(p) triggers, regulatory mapping, and plan generation (`backend/tests/test_case_assessment.py`).
+
+### 3.4 Phase 4 — Research Engine & Preliminary Report Generation
+- **Research Engine (`ml_pipeline/agents/research_engine.py`)**:
+  - Automatically consumes Phase 3 `CaseAssessment` and orchestrates CRAG retrieval for all recommended queries.
+  - Leverages process-wide singleton CRAG pipeline (`ml_pipeline/crag/pipeline_singleton.py`) for efficient, in-memory execution.
+  - Enforces all Rules R1–R10 on every retrieval sub-query (zero orphan claims, sentence entailment, jurisdiction separation, confidence scoring).
+- **Source Tier Classification**:
+  - `Tier 1`: Official statutory portals, WIPO, WTO, CBD, AYUSH gazette.
+  - `Tier 2`: Treaties, conventions, protocols, official acts.
+  - `Tier 3`: Indian Kanoon and case law repositories.
+  - `Tier 4`: Secondary / reference documentation.
+- **Evidence & Risk Aggregation**:
+  - Categorizes findings into discrete risk items (`HIGH`, `MEDIUM`, `LOW`) with statutory grounds (e.g., Section 3(p) TK bar risk, Section 6 NBA approval requirement, Rule 158B clinical evidence burden).
+  - Explicitly surfaces `evidence_gaps` rather than hallucinating missing legal facts.
+- **16-Section Structured Markdown Report (`CaseReport`)**:
+  1. Executive Summary
+  2. Innovation Profile
+  3. User's Objective
+  4. Product/Formulation Classification
+  5. IP Domain Mapping
+  6. Patent & Prior-Art Research
+  7. Traditional Knowledge Assessment
+  8. Biodiversity / ABS Assessment
+  9. Regulatory Considerations
+  10. Trademark / Other IP Considerations
+  11. International Jurisdiction Analysis
+  12. Risk Assessment
+  13. Evidence Gaps
+  14. Recommended Next Steps
+  15. Human Review / Escalation Package
+  16. Sources & Evidence (All verified citations with exact statutory dates)
+- **Rule R5 Statutory Disclaimer**: Injected at string level — cannot be bypassed or suppressed by LLMs.
+- **REST Endpoint**: `POST /api/v1/cases/{id}/report` (idempotent; auto-runs Phase 3 if not yet evaluated).
+- **Test Coverage**: 13 tests covering generation, report structure, idempotency, evidence traceability, and exception safety (`backend/tests/test_case_report.py`).
+
+### 3.5 Code-Enforced Legal Guardrails (Rules R1–R10)
 All 10 legal guardrails are enforced deterministically in Python code:
 
 | Rule | Title | Mechanism |
 | :--- | :--- | :--- |
 | **R1** | **Safe Abstention** | Evaluated at graph edge (`graph.py._edge_post_grade`). If zero retrieved chunks score `CORRECT`, pipeline halts and emits a safe refusal. |
 | **R2** | **Zero Orphan Claims** | [`verifier.py`](file:///Users/ayushk/Desktop/assistant/ml_pipeline/crag/verifier.py) parses sentences; any sentence making a legal claim without a terminal `[chunk_id]` tag is stripped. |
-| **R3** | **Citation Entailment Verification** | Compares assertions against retrieved chunk text. Includes deterministic keyword-matching heuristic fallback when `self.llm = None`. |
+| **R3** | **Citation Entailment Verification** | Compares assertions against retrieved chunk text with heuristic and NLI evaluation. |
 | **R4** | **Strict Jurisdiction Separation** | National (India) and International treaty chunks are retrieved, processed, and rendered in distinct, labeled sections. |
 | **R5** | **Mandatory Legal Disclaimer** | Appended at Python string-level by `OutputAssembler` (`"This is informational guidance, not legal advice..."`). LLMs cannot suppress it. |
 | **R6** | **Paid-Source Consent Guard** | [`backend/app/core/r6_consent_guard.py`](file:///Users/ayushk/Desktop/assistant/backend/app/core/r6_consent_guard.py) intercepts all requests; queries touching gated databases are blocked unless affirmative `paid_source_consent=True` is logged. |
@@ -188,79 +240,102 @@ All 10 legal guardrails are enforced deterministically in Python code:
 | **R9** | **Formulation Classification Gate** | Enforced in `CRAGPipeline.run()`: any query mentioning an Ayurvedic formulation triggers automatic classification before IP advice is rendered. |
 | **R10** | **Version & Date Stamping** | Every citation returns exact statutory amendment dates (`effective_date` metadata). |
 
----
-
-### 2.4 Vector Search, Retrieval & Ranking
-- **Vector Database**: Local persistent Qdrant instance storing 384-dimensional or 1024-dimensional multilingual embeddings.
-- **Embedding Model**: Cohere Multilingual Embed v3 (`embed-multilingual-v3.0`), supporting English, Hindi, and Indian vernacular queries.
-- **Maximal Marginal Relevance (MMR)**: Codified in [`ml_pipeline/embeddings/mmr.py`](file:///Users/ayushk/Desktop/assistant/ml_pipeline/embeddings/mmr.py) to prevent search results from being monopolized by repeated hits from a single statute.
-- **Deterministic Offline Heuristic Fallbacks**: Grader, Generator, and Verifier include deterministic keyword and rule-based fallbacks to guarantee 100% functionality even during LLM outages or when running without API keys.
-
----
-
-### 2.5 REST Backend & React Frontend Applications
-- **FastAPI REST API**:
-  - `POST /api/v1/query`: Core CRAG pipeline with Rule R6 consent check, jurisdiction filtering, and DPDP Act 2023 audit logging.
-  - `POST /api/v1/classify`: 5-tier Ayurvedic product classification decision tree.
-  - `GET /api/v1/abs/calculate`: BDA 2023 ABS fee slab (0.1%–0.5% turnover) and exemption calculator.
-  - `POST /api/v1/escalation`: Human IP facilitator ticket creation for queries requiring certified attorney review.
-  - `GET /health`: Health check with vector collection status.
-- **Modern React + Vite + Tailwind Frontend**:
-  - Responsive chatbot UI with jurisdiction switcher (National, International, Both).
-  - Interactive formulation classification wizard.
-  - Visual confidence badges (`HIGH`, `MEDIUM`, `LOW`), clickable statutory citation pills, legal disclaimer banner, and copy/export functionality.
+### 3.6 Frontend UI & Interactive Chatbot
+- **Modern React + Vite Frontend** (`frontend/src/`):
+  - **Conversational Chatbot**: Full conversational interaction supporting intent classification, case creation, and progressive intake.
+  - **Rich Markdown Message Rendering**: Uses `react-markdown` with syntax-highlighted code blocks, bold emphasis, structured lists, and tables.
+  - **Inline Phase 3 Assessment Panel**: Renders an executive card displaying classification badges, IP posture, target jurisdictions, prioritized research tasks, and statutory risk warnings.
+  - **Phase 4 Research Report Modal**: Viewable and downloadable 16-section legal research report.
+  - **Dynamic Follow-up Chips**: Contextual question chips generated from assessment recommendations.
+  - **Case Switcher & Confirmation Dialogs**: Seamless context preservation with explicit user confirmation when initiating new innovation cases.
+  - **Multilingual UI Support**: Interface language selector and voice recording controls.
 
 ---
 
-### 2.6 Test Verification (37 Passed across 7 Suites)
-Every component is verified by comprehensive automated tests:
+## 4. Comprehensive Test Verification
 
-```bash
-PYTHONPATH=.:backend uv run pytest backend/tests/ ml_pipeline/tests/
+### 4.1 Test Summary
+All test suites pass with **100% success rate** across backend APIs, data models, ML pipelines, and CRAG retrieval:
+
+```
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/ayushk/Desktop/assistant
+collected 137 items
+
+backend/tests/test_abs.py ..                                             [  1%]
+backend/tests/test_case_assessment.py .......................            [ 18%]
+backend/tests/test_case_intake.py ........................               [ 35%]
+backend/tests/test_case_report.py .............                          [ 45%]
+backend/tests/test_classify.py .....                                     [ 48%]
+backend/tests/test_crag_api.py ....                                      [ 51%]
+backend/tests/test_intent_api.py .........                               [ 58%]
+backend/tests/test_r6_consent_guard.py .........                         [ 64%]
+ml_pipeline/tests/test_crag_pipeline.py ......                           [ 69%]
+ml_pipeline/tests/test_heuristic_fallbacks.py ........                   [ 75%]
+ml_pipeline/tests/test_intent_classifier.py ...........................  [ 94%]
+....                                                                     [ 97%]
+ml_pipeline/tests/test_mmr.py ...                                        [100%]
+
+======================= 137 passed, 5 warnings in 26.48s =======================
 ```
 
-**Results (100% Passing)**:
-- `backend/tests/test_abs.py`: 2 tests passed (ABS fee calculation and exemption rules).
-- `backend/tests/test_classify.py`: 5 tests passed (Classical, Proprietary, Phyto, Ayurveda Aahar, Cosmetic).
-- `backend/tests/test_crag_api.py`: 4 tests passed (National, International, Both, and Abstention endpoints).
-- `backend/tests/test_r6_consent_guard.py`: 9 tests passed (Rule R6 paid-source consent verification).
-- `ml_pipeline/tests/test_crag_pipeline.py`: 6 tests passed (CRAG workflow and guardrail enforcement).
-- `ml_pipeline/tests/test_heuristic_fallbacks.py`: 8 tests passed (Deterministic zero-LLM fallbacks).
-- `ml_pipeline/tests/test_mmr.py`: 3 tests passed (MMR diversity and ranking mechanics).
-**Total**: **37 passed** in 360s.
+### 4.2 Breakdown by Test Suite
+
+| Test Suite | Tests Passed | Focus Area |
+| :--- | :---: | :--- |
+| `backend/tests/test_abs.py` | 2 | BDA 2023 ABS fee slab (0.1%-0.5%) & AYUSH practitioner exemptions |
+| `backend/tests/test_case_assessment.py` | 23 | Phase 3 deterministic 5-subpart classification & regulatory mapping |
+| `backend/tests/test_case_intake.py` | 24 | Phase 2 progressive intake, entity extraction, deduplication & state |
+| `backend/tests/test_case_report.py` | 13 | Phase 4 research engine, 16-section report assembly, risk & evidence gaps |
+| `backend/tests/test_classify.py` | 5 | 5-tier Ayurvedic product classification decision tree |
+| `backend/tests/test_crag_api.py` | 4 | National, International, Both, and Safe Abstention endpoints |
+| `backend/tests/test_intent_api.py` | 9 | REST API for multi-intent recognition and entity extraction |
+| `backend/tests/test_r6_consent_guard.py` | 9 | Rule R6 paid-source consent verification and blocking |
+| `ml_pipeline/tests/test_crag_pipeline.py` | 6 | End-to-end CRAG retrieval, relevance grading, and citation verification |
+| `ml_pipeline/tests/test_heuristic_fallbacks.py` | 8 | Deterministic zero-LLM fallbacks for grading and verification |
+| `ml_pipeline/tests/test_intent_classifier.py` | 31 | Rule-based and LLM-based intent and entity extraction logic |
+| `ml_pipeline/tests/test_mmr.py` | 3 | Maximal Marginal Relevance diversity and re-ranking mechanics |
+| **Total Automated Tests** | **137** | **100% Passing (0 failures, 0 regressions)** |
+
+### 4.3 Frontend Build Verification
+The React + Vite frontend compiles cleanly with zero production bundle errors:
+```bash
+$ npm run build
+vite v8.2.2 building client environment for production...
+✓ 94 modules transformed.
+dist/index.html                   0.80 kB │ gzip:   0.43 kB
+dist/assets/index-DIx2fqdK.css   26.29 kB │ gzip:   5.77 kB
+dist/assets/index-s0NcgcQ9.js   306.72 kB │ gzip: 100.16 kB
+✓ built in 177ms
+```
 
 ---
 
-## 3. What Is Left to Implement (Honest Roadmap & Gaps)
+## 5. What Is Left to Implement (Future Roadmap & Gaps)
 
-While the Core Retrieval, Formulation Classification, and Legal Guardrail engines are fully operational and verified, the following advanced items represent the roadmap for remaining implementation:
+While the Core Retrieval, Intent Classification, Progressive Intake, Phase 3 Assessment, Phase 4 Research Engine, and Legal Guardrail engines are fully operational and verified, the following advanced items represent the roadmap for remaining implementation:
 
-### 3.1 Phase 3 Gaps: Knowledge Graph & External Live Portals
-1. **Neo4j Knowledge Graph Multi-Hop Reasoning**:
-   - *Current Status*: Entity models and schema are defined in [`ml_pipeline/knowledge_graph/schema.py`](file:///Users/ayushk/Desktop/assistant/ml_pipeline/knowledge_graph/schema.py) and graph builder script exists in [`scripts/build_graph.py`](file:///Users/ayushk/Desktop/assistant/scripts/build_graph.py).
-   - *Left to Implement*: Provisioning a live Neo4j database instance and wiring Cypher traversal queries directly into the LangGraph workflow. This will enable complex multi-hop reasoning:
-     $$\text{Plant Species} \longrightarrow \text{Classical Formulation} \longrightarrow \text{First Schedule Text} \longrightarrow \text{Section 3(p) Bar} \longrightarrow \text{Prior Revocations}$$
-2. **IP India Dynamic Search Integration**:
-   - *Current Status*: Constants and endpoint URLs configured.
-   - *Left to Implement*: Real-time scraper and connector for InPASS (Indian Patent Advanced Search System), Trade Marks Registry search, and GI Registry certificate database.
-3. **Indian Kanoon Landmark Case Law Ingestion**:
-   - *Current Status*: Bare Acts and statutory sections are scraped and cached.
-   - *Left to Implement*: Ingesting full-text judgments of landmark traditional knowledge cases (e.g., European Patent Office Neem patent revocation, USPTO Turmeric patent revocation, *Novartis v. Union of India* on Section 3(d) therapeutic efficacy standards).
+### 5.1 Knowledge Graph Multi-Hop Reasoning
+- **Current Status**: Entity models and graph schema are defined in `ml_pipeline/knowledge_graph/schema.py`, and a graph builder script exists in `scripts/build_graph.py`.
+- **Left to Implement**: Provisioning a live Neo4j database instance and wiring Cypher traversal queries directly into the LangGraph workflow. This will enable complex multi-hop reasoning:
+  $$\text{Plant Species} \longrightarrow \text{Classical Formulation} \longrightarrow \text{First Schedule Text} \longrightarrow \text{Section 3(p) Bar} \longrightarrow \text{Prior Revocations}$$
 
-### 3.2 Phase 4 Gaps: Bhashini Voice & Vernacular Pipeline
-1. **Production Government of India Bhashini NMT API Integration**:
-   - *Current Status*: Service stubs and language mappings for 10 Scheduled Indian languages are configured in [`backend/app/services/bhashini_service.py`](file:///Users/ayushk/Desktop/assistant/backend/app/services/bhashini_service.py).
-   - *Left to Implement*: Connecting live Bhashini ULCA pipeline credentials to translate incoming vernacular prompts into English before CRAG retrieval, and translating the verified, citation-tagged response back into the user's native language.
-2. **Bhashini Voice Pipeline (ASR & TTS)**:
-   - *Current Status*: Audio endpoints stubbed.
-   - *Left to Implement*: Frontend microphone capture for Speech-to-Text (ASR) and audio response playback (TTS) for rural farmers and traditional Vaidyas who prefer oral communication.
-3. **Live Human Facilitator Dashboard**:
-   - *Current Status*: `/api/v1/escalation` endpoint records escalation tickets with DPDP Act audit logging.
-   - *Left to Implement*: A dedicated admin web dashboard for certified AYUSH IP facilitators to review low-confidence queries (< 0.70) and provide manual, human-in-the-loop legal assistance.
+### 5.2 IP India Dynamic Portal Integration
+- **Current Status**: Endpoint constants and target schemas configured.
+- **Left to Implement**: Real-time scraper and connector for InPASS (Indian Patent Advanced Search System), Trade Marks Registry search, and GI Registry certificate database.
+
+### 5.3 Full Bhashini Speech & Translation Integration
+- **Current Status**: Service stubs and language mappings for 10 Scheduled Indian languages are configured in `backend/app/services/bhashini_service.py`. Audio recording UI exists in the frontend.
+- **Left to Implement**: Connecting live Government of India Bhashini ULCA credentials for ASR (Speech-to-Text) and TTS (Text-to-Speech) for rural farmers and traditional Vaidyas.
+
+### 5.4 Certified Facilitator Admin Dashboard
+- **Current Status**: `/api/v1/escalation` endpoint records escalation tickets with DPDP Act audit logging and human review packages.
+- **Left to Implement**: A dedicated administrative web portal for certified AYUSH IP facilitators to review low-confidence queries (< 0.70) and provide certified human-in-the-loop assistance.
 
 ---
 
-## 4. Quick Start & Execution Guide
+## 6. Quick Start & Execution Guide
 
 ### Step 1: Start the FastAPI Backend
 ```bash
@@ -274,9 +349,9 @@ npm run dev -- --host 127.0.0.1 --port 5173
 # Web Application: http://127.0.0.1:5173/chatbot
 ```
 
-### Step 3: Run the Complete Automated Test Suite
+### Step 3: Run the Complete Automated Test Suite (137 Tests)
 ```bash
-PYTHONPATH=.:backend uv run pytest backend/tests/ ml_pipeline/tests/
+COHERE_API_KEY="" PYTHONPATH=.:backend uv run pytest backend/tests/ ml_pipeline/tests/
 ```
 
 ### Step 4: Re-seed Corpus from Live Sources (Optional)

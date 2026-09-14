@@ -13,12 +13,25 @@ export default function ChatMessages({ messages, isTyping, onFollowUpClick, scro
                 {msg.text}
                 {msg.citations && (
                   <div className={styles.msgMeta}>
-                    {msg.citations.map((c) => (
-                      <span className={styles.citationChip} key={c}>
-                        <span className={styles.citationMark} aria-hidden="true" />
-                        {c}
-                      </span>
-                    ))}
+                    {msg.citations.map((c) =>
+                      c.url ? (
+                        <a
+                          className={styles.citationChip}
+                          key={c.label}
+                          href={c.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <span className={styles.citationMark} aria-hidden="true" />
+                          {c.label}
+                        </a>
+                      ) : (
+                        <span className={styles.citationChip} key={c.label}>
+                          <span className={styles.citationMark} aria-hidden="true" />
+                          {c.label}
+                        </span>
+                      )
+                    )}
                     <span className={styles.confidenceChip}>{msg.confidence}</span>
                   </div>
                 )}

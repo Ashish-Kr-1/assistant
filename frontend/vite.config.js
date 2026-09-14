@@ -4,7 +4,7 @@ import { defineConfig } from 'vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/assistant/',
+  //base: '/assistant/',
   server: {
     proxy: {
       // Forwards frontend calls to the FastAPI backend during `npm run dev`.

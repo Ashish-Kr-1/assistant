@@ -1,5 +1,11 @@
 /* ---------- shared neumorphic primitives ---------- */
 
+.nmRaised {
+  background: var(--surface);
+  box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+  transition: box-shadow 220ms ease, transform 220ms ease, background 320ms ease;
+}
+
 .nmInset {
   background: var(--surface);
   box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
@@ -11,10 +17,18 @@
   padding: 12px 24px 24px;
 }
 
+.composerRow {
+  max-width: 880px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
 .composerInner {
   position: relative;
-  max-width: 720px;
-  margin: 0 auto;
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: flex-end;
   gap: 10px;
@@ -46,6 +60,62 @@
   color: var(--text-muted);
 }
 
+.composerInner textarea:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.recordingIndicator {
+  flex: 1;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 700;
+  color: var(--text-muted);
+  padding: 8px 0;
+}
+
+.dots {
+  display: inline-flex;
+  align-items: center;
+}
+
+.dots .dot {
+  opacity: 1;
+}
+
+.dots .dot2 {
+  opacity: 0;
+  animation: dotAppear2 3s infinite;
+}
+
+.dots .dot3 {
+  opacity: 0;
+  animation: dotAppear3 3s infinite;
+}
+
+@keyframes dotAppear2 {
+  0%, 33.32% {
+    opacity: 0;
+  }
+  33.34%, 100% {
+    opacity: 1;
+  }
+}
+
+@keyframes dotAppear3 {
+  0%, 66.64% {
+    opacity: 0;
+  }
+  66.66%, 100% {
+    opacity: 1;
+  }
+}
+
 .iconBtn {
   width: 38px;
   height: 38px;
@@ -58,6 +128,13 @@
   flex-shrink: 0;
   color: var(--accent-green-deep);
   background: transparent;
+  transition: background 220ms ease, color 220ms ease, box-shadow 220ms ease;
+}
+
+.iconBtn.listening {
+  background: var(--accent-green);
+  color: var(--color-warm-white);
+  box-shadow: 2px 2px 6px var(--shadow-dark);
 }
 
 .sendBtn {
@@ -83,4 +160,36 @@
 .sendBtn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* ---------- language select ---------- */
+
+.languageSelect {
+  flex-shrink: 0;
+  height: 46px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  border: none;
+  border-radius: 18px;
+  padding: 0 34px 0 16px;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--accent-ochre-deep);
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%238C5F2E' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  transition: transform 180ms ease, box-shadow 220ms ease;
+}
+
+.languageSelect:hover {
+  transform: translateY(-1.5px);
+}
+
+.languageSelect:focus-visible {
+  outline: none;
+  box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light), 0 0 0 3px rgba(184, 131, 74, 0.35);
 }

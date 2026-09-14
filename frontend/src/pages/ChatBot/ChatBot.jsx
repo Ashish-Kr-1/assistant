@@ -34,7 +34,10 @@ const initialMessages = [
     id: "m3",
     role: "assistant",
     text: "No. A formulation drawn directly from a First Schedule classical text is treated as traditional knowledge and is barred from patenting as an existing product. A patent may still cover a novel, inventive modification — e.g. a new extraction process or a synergistic combination not disclosed in the classical texts.",
-    citations: ["Patents Act 1970, Sec 3(p)", "TKDL Prior-Art Classification"],
+    citations: [
+      { label: "Patents Act 1970, Sec 3(p)", url: "https://www.indiacode.nic.in/handle/123456789/1989" },
+      { label: "TKDL Prior-Art Classification", url: "" },
+    ],
     confidence: "High confidence",
     followUps: [
       "What counts as a novel, inventive modification here?",
@@ -65,8 +68,16 @@ function citationLabels(citations) {
   return citations.map((c) => {
     const statute = c.statute || c.treaty || c.act_name || "Source"
     const locator = c.section || c.rule || c.article || c.section_id || ""
-    return locator ? `${statute}, ${locator}` : statute
+    const label = locator ? `${statute}, ${locator}` : statute
+    return { label, url: c.official_url || "" }
   })
+}
+
+const LANGUAGE_CODES = {
+  English: "en",
+  Hindi: "hi",
+  Tamil: "ta",
+  Telugu: "te",
 }
 
 const SIDEBAR_MIN_WIDTH = 220
@@ -77,6 +88,7 @@ export default function ChatBot() {
   const [sidebarWidth, setSidebarWidth] = useState(360)
   const [isResizingSidebar, setIsResizingSidebar] = useState(false)
   const [jurisdiction, setJurisdiction] = useState("national")
+  const [language, setLanguage] = useState("English")
   const [activeChatId, setActiveChatId] = useState("1")
   const [messages, setMessages] = useState(initialMessages)
   const [draft, setDraft] = useState("")
@@ -135,6 +147,7 @@ export default function ChatBot() {
       const { data } = await api.post("/query", {
         query: text,
         jurisdiction,
+        language: LANGUAGE_CODES[language] || "en",
         dpdp_consent: true,
       })
 
@@ -213,6 +226,8 @@ export default function ChatBot() {
           onKeyDown={handleKeyDown}
           onSend={handleSend}
           isTyping={isTyping}
+          language={language}
+          onLanguageChange={setLanguage}
         />
       </main>
     </div>

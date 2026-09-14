@@ -50,6 +50,16 @@
   border-radius: 20px;
   font-size: 14px;
   line-height: 1.55;
+  cursor: default;
+}
+
+.msgBubble.nmRaised:active {
+  box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+}
+
+.msgRow.assistant .msgBubble {
+  max-width: 100%;
+  width: 100%;
 }
 
 .msgRow.user .msgBubble {
@@ -84,6 +94,7 @@
   padding: 6px 12px 6px 10px;
   box-shadow: 3px 3px 14px var(--shadow-dark), -3px -3px 14px var(--shadow-light);
   cursor: pointer;
+  text-decoration: none;
   transition: transform 200ms ease, box-shadow 200ms ease, background 320ms ease;
 }
 

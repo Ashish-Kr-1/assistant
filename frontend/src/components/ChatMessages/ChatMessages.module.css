@@ -193,3 +193,206 @@
     opacity: 1;
   }
 }
+
+/* ---------- Phase 3 Assessment Card ---------- */
+
+.assessmentCard {
+  width: 100%;
+  background: var(--surface);
+  border: 1.5px solid var(--border-hairline);
+  border-radius: 16px;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 4px 4px 12px var(--shadow-dark), -4px -4px 12px var(--shadow-light);
+  animation: messageIn 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.assessmentHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  background: linear-gradient(100deg, var(--accent-ochre) 0%, var(--accent-green-deep) 100%);
+  flex-wrap: wrap;
+}
+
+.assessmentBadge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.9);
+  background: rgba(0,0,0,0.18);
+  border-radius: 999px;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
+
+.assessmentTitle {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #fffdf6;
+  flex: 1;
+}
+
+.assessmentSection {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-hairline);
+}
+
+.assessmentSection:last-of-type {
+  border-bottom: none;
+}
+
+.sectionLabel {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent-ochre-deep);
+  margin-bottom: 8px;
+}
+
+.assessmentBody {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+.assessmentNote {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  border-left: 3px solid var(--accent-ochre);
+  padding-left: 10px;
+}
+
+/* Jurisdiction grid */
+
+.jurisdictionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.jurisdictionCard {
+  background: var(--bg-base);
+  border: 1px solid var(--border-hairline);
+  border-radius: 10px;
+  padding: 10px 12px;
+  box-shadow: 3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light);
+}
+
+.jurName {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent-green-deep);
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+.jurAuthority {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.jurAbs {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-ochre-deep);
+  margin-bottom: 4px;
+}
+
+.jurList {
+  margin: 4px 0 0 14px;
+  padding: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* Research tasks */
+
+.researchTasks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.researchTask {
+  background: var(--bg-base);
+  border: 1px solid var(--border-hairline);
+  border-radius: 10px;
+  padding: 10px 12px;
+  box-shadow: 2px 2px 5px var(--shadow-dark), -2px -2px 5px var(--shadow-light);
+}
+
+.taskHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.taskId {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  font-family: monospace;
+  letter-spacing: 0.05em;
+}
+
+.taskPriority {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.taskTitle {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.taskDesc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* Risk / Opportunity lists */
+
+.riskList,
+.opportunityList {
+  margin: 0;
+  padding: 0 0 0 4px;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.riskList li {
+  font-size: 12.5px;
+  color: var(--accent-ochre-deep);
+  line-height: 1.5;
+}
+
+.opportunityList li {
+  font-size: 12.5px;
+  color: var(--accent-green-deep);
+  line-height: 1.5;
+}
+
+.assessmentDisclaimer {
+  padding: 10px 20px 14px;
+  font-size: 10.5px;
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.4;
+  border-top: 1px solid var(--border-hairline);
+}
+

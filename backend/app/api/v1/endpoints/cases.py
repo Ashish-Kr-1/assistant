@@ -1,10 +1,12 @@
 """
-Phase 2 — Innovation Intake + Case Creation API.
+Phase 2 + 3 — Innovation Intake, Case Creation & Assessment API.
 
-POST   /cases                  create a case
-POST   /cases/{case_id}/intake process the next intake message
-GET    /cases/{case_id}        retrieve a case
-PATCH  /cases/{case_id}        directly merge structured profile fields
+POST   /cases                     create a case
+POST   /cases/{case_id}/intake    process the next intake message
+GET    /cases/{case_id}           retrieve a case (includes assessment when ready)
+PATCH  /cases/{case_id}           directly merge structured profile fields
+POST   /cases/{case_id}/assess    explicitly (re-)trigger Phase 3 assessment
+POST   /cases/{case_id}/report    execute Phase 4 Research Engine, produce evidence-backed report
 
 Ownership: user_id is client-supplied until a real auth system exists in this
 project (there is none yet — see final report assumptions). Every read/write
@@ -62,7 +64,8 @@ async def get_case(case_id: str, user_id: str = "anonymous_user", db: Session = 
 async def intake_message(case_id: str, request: IntakeMessageRequest, db: Session = Depends(get_db)):
     """
     Processes one progressive-intake message against an existing case.
-    Never launches research, classification, or any Phase 3+ engine.
+    When the case transitions to READY_FOR_RESEARCH, Phase 3 assessment runs
+    automatically and the result is returned via GET /cases/{case_id}.
     """
     message = request.message.strip()
     if not message:
@@ -89,3 +92,47 @@ async def patch_case(case_id: str, request: CasePatchRequest, db: Session = Depe
         raise HTTPException(status_code=403, detail="This case belongs to a different user.")
     except ValidationError as e:
         raise HTTPException(status_code=422, detail=f"Invalid profile_patch: {e.errors()}")
+
+
+@router.post("/cases/{case_id}/assess", response_model=Case)
+async def assess_case(case_id: str, user_id: str = "anonymous_user", db: Session = Depends(get_db)):
+    """
+    Phase 3 — Explicitly trigger (or re-trigger) the Innovation Classification &
+    Legal Domain Mapping assessment for a case. This is idempotent: running it
+    multiple times simply overwrites the prior assessment result.
+
+    Assessment is also auto-triggered when the case reaches READY_FOR_RESEARCH
+    via the /intake or /patch endpoints, so this endpoint is only needed for
+    manual re-runs or backfilling older cases.
+    """
+    try:
+        return CaseService.assess_case(db, case_id=case_id, user_id=user_id)
+    except CaseNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Case {case_id} not found.")
+    except CaseAccessDeniedError:
+        raise HTTPException(status_code=403, detail="This case belongs to a different user.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Assessment failed: {e}")
+
+
+@router.post("/cases/{case_id}/report", response_model=Case)
+async def generate_report(case_id: str, user_id: str = "anonymous_user", db: Session = Depends(get_db)):
+    """
+    Phase 4 — Executes the Research Engine against every Phase 3
+    recommended_crag_query (via the existing CRAG pipeline: Qdrant + grading +
+    generation + citation verification + abstention), and assembles a
+    structured, evidence-backed, source-cited preliminary report.
+
+    Auto-runs Phase 3 assessment first if it hasn't been run yet. Idempotent —
+    re-running overwrites the prior report. The report is returned in
+    `research_report` on the Case; `report_markdown` inside it is ready for
+    direct display.
+    """
+    try:
+        return CaseService.run_research(db, case_id=case_id, user_id=user_id)
+    except CaseNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Case {case_id} not found.")
+    except CaseAccessDeniedError:
+        raise HTTPException(status_code=403, detail="This case belongs to a different user.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Research engine failed: {e}")

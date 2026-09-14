@@ -7,7 +7,7 @@ never contains a patentability, ABS-applicability, or compliance conclusion.
 
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -189,6 +189,18 @@ class Case(BaseModel):
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     profile: InnovationProfile = Field(default_factory=InnovationProfile)
     intake_state: IntakeState = Field(default_factory=IntakeState)
+    # Phase 3 — populated once the case transitions to READY_FOR_RESEARCH.
+    # Raw dict so the schema stays portable (no circular import with assessment_schema).
+    assessment: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Phase 3 CaseAssessment JSON, or null while intake is in progress."
+    )
+    # Phase 4 — populated once research has been explicitly run via POST /cases/{id}/report.
+    # Raw dict for the same reason as `assessment` (avoids a circular import with report_schema).
+    research_report: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Phase 4 CaseReport JSON, or null until research has been run."
+    )
 
 
 class IntakeResponse(BaseModel):

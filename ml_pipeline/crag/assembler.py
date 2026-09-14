@@ -89,7 +89,11 @@ class OutputAssembler:
                 "section_id": c.section_id,
                 "jurisdiction": c.jurisdiction.value,
                 "effective_date": c.effective_date,
-                "official_url": c.official_url
+                "official_url": c.official_url,
+                "source": c.source,
+                "ip_type": c.ip_type.value if hasattr(c.ip_type, "value") else c.ip_type,
+                "status": c.status.value if hasattr(c.status, "value") else c.status,
+                "text_snippet": (c.text or "")[:400],
             })
 
         return {

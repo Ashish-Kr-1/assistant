@@ -44,7 +44,12 @@ from ml_pipeline.crag.schema import (
 logger = logging.getLogger("legal_scraper")
 
 REQUEST_DELAY_SECONDS = 1.0
-HTTP_TIMEOUT = 30.0
+# Kept short deliberately (Section 39 — hackathon demo reliability): this scraper is only
+# ever used to build the foundational corpus at process startup, and a slow/unreachable
+# source must not block that startup for tens of seconds. A source that times out is
+# simply omitted (see get_foundational_corpus docstring) — that's the intended, safe
+# behavior, not a defect to paper over with a longer timeout.
+HTTP_TIMEOUT = 8.0
 MAX_CHARS_PER_CHUNK = 2500
 CACHE_DIR = Path(__file__).resolve().parent.parent / "data" / "cache"
 

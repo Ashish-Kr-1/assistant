@@ -1,4 +1,5 @@
 import logging
+from typing import List
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.orm import Session
 from fastapi import Depends
@@ -13,6 +14,13 @@ from ml_pipeline.schemas.case_schema import IntakeStatus
 from ml_pipeline.schemas.intent_schema import Route
 from ml_pipeline.classifier.intent_classifier import IntentClassifier
 from ml_pipeline.crag.pipeline_singleton import get_crag_pipeline
+from ml_pipeline.crag.llm_factory import get_llm
+from ml_pipeline.agents.web_research_agent import (
+    detect_language,
+    run_web_research,
+    translate_answer,
+    web_search_available,
+)
 
 logger = logging.getLogger("query_api")
 router = APIRouter()
@@ -154,12 +162,91 @@ async def query_assistant(request: QueryRequest, db: Session = Depends(get_db)):
             execution_logs=logs,
         )
 
+    # Real multilingual detection (web_research_agent port of Charak IP's language step).
+    # Falls back to a Devanagari-regex heuristic when no LLM key is configured — never blocks
+    # or raises just because a provider is unavailable.
+    llm_instance = get_llm(temperature=0.0)
+    detection = detect_language(query_text, llm=llm_instance)
+    if not detection.is_english:
+        logs.append(_make_log(
+            "web_research_agent", "INFO",
+            f"Detected language: {detection.language_name}"
+            + (" [heuristic — no LLM configured]" if detection.heuristic_only else "")
+            + f"; English query for retrieval: '{detection.english_query[:60]}'"
+        ))
+    retrieval_query = detection.english_query or query_text
+
+    # ── Phase 1: Intent + Entity Classification (deterministic rules, LLM fallback) ──
+    # Gated on detection.is_english: the rule engine's patterns are English-only, so on
+    # non-English/heuristic-only input (no LLM to translate reliably) it would fall through
+    # to the no-LLM UNKNOWN/CLARIFICATION fallback for every query regardless of actual intent —
+    # skip the gate there and let CRAG (already running on the translated retrieval_query)
+    # answer directly rather than misfiring a clarification prompt.
+    if detection.is_english:
+        intent_res = IntentClassifier.classify(query_text)
+
+        if intent_res.route == Route.CLARIFICATION:
+            logs.append(_make_log("intent_classifier", "INFO", f"Classified as CLARIFICATION (confidence={intent_res.confidence:.2f}); requesting clarification"))
+            return QueryResponse(
+                query=request.query,
+                jurisdiction=jurisdiction,
+                answer=intent_res.clarification_question or "What would you like help with—IP protection, patent research, regulatory requirements, biodiversity/ABS, or something else?",
+                confidence_score=intent_res.confidence,
+                confidence_level="LOW",
+                citations=[],
+                formulation_category=request.formulation_category,
+                is_abstained=False,
+                escalate_to_human=False,
+                abs_guidance=None,
+                disclaimer=settings.LEGAL_DISCLAIMER_TEXT,
+                anonymized_audit_ref=audit["anonymized_user_ref"],
+                intent=intent_res.intent.value,
+                route=intent_res.route.value,
+                entities=intent_res.entities.model_dump(),
+                needs_clarification=True,
+                clarification_question=intent_res.clarification_question,
+                case_id=None,
+                execution_logs=logs,
+            )
+
+        if intent_res.route == Route.OUT_OF_SCOPE:
+            logs.append(_make_log("intent_classifier", "INFO", "Classified as OUT_OF_SCOPE; declining outside assistant's IP/Ayurveda domain"))
+            return QueryResponse(
+                query=request.query,
+                jurisdiction=jurisdiction,
+                answer=(
+                    "I am **IP-SAKTI Sahayak**, specialized in Intellectual Property (IP), Traditional Knowledge, "
+                    "regulatory licensing (AYUSH, FSSAI, CDSCO), and Access & Benefit Sharing (ABS) for Ayurveda.\n\n"
+                    "I can assist you with:\n"
+                    "- **Patentability & Traditional Knowledge**: Checking Section 3(p), 3(d), or 3(e) patent bars\n"
+                    "- **Product Classification**: Classical Medicine, Proprietary Medicine, Phytopharmaceuticals, or Ayurveda Aahara\n"
+                    "- **Biodiversity / ABS**: National Biodiversity Authority (NBA) approvals and fee exemptions\n"
+                    "- **International Filings**: WIPO GRATK Treaty, PCT, Nagoya Protocol, or trademark registrations.\n\n"
+                    "Please let me know how I can help with your Ayurvedic innovation or legal research!"
+                ),
+                confidence_score=0.90,
+                confidence_level="HIGH",
+                citations=[],
+                formulation_category=request.formulation_category,
+                is_abstained=True,
+                escalate_to_human=False,
+                abs_guidance=None,
+                disclaimer=settings.LEGAL_DISCLAIMER_TEXT,
+                anonymized_audit_ref=audit["anonymized_user_ref"],
+                intent=intent_res.intent.value,
+                route=intent_res.route.value,
+                entities=intent_res.entities.model_dump(),
+                needs_clarification=False,
+                case_id=None,
+                execution_logs=logs,
+            )
+
     # Direct CRAG execution: Qdrant retrieval + Cohere legal generation + citation verification
-    logs.append(_make_log("crag_graph", "INFO", f"Executing Corrective RAG pipeline in Query Mode: '{query_text[:50]}' [jurisdiction={jurisdiction.upper()}]"))
+    logs.append(_make_log("crag_graph", "INFO", f"Executing Corrective RAG pipeline in Query Mode: '{retrieval_query[:50]}' [jurisdiction={jurisdiction.upper()}]"))
     logs.append(_make_log("vector_store", "INFO", "Executing vector similarity search in Qdrant (top_k=4)..."))
     pipeline = get_crag_pipeline()
     crag_result = pipeline.run(
-        query=query_text,
+        query=retrieval_query,
         jurisdiction=jurisdiction,
         skip_classification_gate=True,
         formulation_category=request.formulation_category
@@ -215,12 +302,63 @@ async def query_assistant(request: QueryRequest, db: Session = Depends(get_db)):
             )
         )
 
+    # Live web research fallback (web_research_agent port of Charak IP): only kicks in when the
+    # verified local corpus produced a weak or abstained result — an enhancement layer on top of
+    # the existing corpus-first design, not a replacement for it.
+    used_web_search = False
+    # confidence_level can read MEDIUM even with zero retrieved citations (assemble_response
+    # only reserves HIGH for >=1 verified chunk, so an empty corpus match still lands on
+    # MEDIUM) — treat "nothing in the local corpus matched" as weak in its own right, not just
+    # a low verification ratio or an explicit abstain.
+    weak_local_result = (
+        crag_result.get("is_abstained")
+        or crag_result.get("confidence_level") == "LOW"
+        or citations_count == 0
+    )
+    if weak_local_result and web_search_available():
+        logs.append(_make_log("web_research_agent", "INFO", "Local corpus result is weak/abstained; attempting live web research fallback..."))
+        web_result = run_web_research(query_text, jurisdiction=jurisdiction)
+        if web_result.get("used_web_search") and web_result.get("answer"):
+            used_web_search = True
+            logs.append(_make_log("web_research_agent", "INFO", f"Live web research returned {len(web_result['citations'])} verified source(s)."))
+            web_answer_section = f"### Live Web Research\n\n{web_result['answer']}"
+            if crag_result.get("is_abstained"):
+                crag_result["answer"] = web_answer_section
+                crag_result["is_abstained"] = False
+            else:
+                crag_result["answer"] = f"{crag_result.get('answer', '')}\n\n---\n\n{web_answer_section}"
+            for src in web_result["citations"]:
+                api_citations.append(
+                    CitationSchema(
+                        jurisdiction=src.get("jurisdiction") or jurisdiction,
+                        official_url=src.get("url", ""),
+                        title=src.get("title", ""),
+                        summary="Live web search result (Tavily) — not from the verified static corpus.",
+                        source_type="web",
+                    )
+                )
+        else:
+            logs.append(_make_log("web_research_agent", "INFO", "Live web research found no usable results; keeping local corpus response."))
+    elif weak_local_result:
+        logs.append(_make_log("web_research_agent", "INFO", "Local result is weak/abstained but TAVILY_API_KEY is not configured; skipping live web fallback."))
+
+    # Translate the final answer into the user's detected language, preserving citation markers.
+    final_answer = crag_result.get("answer", "")
+    if not detection.is_english:
+        if detection.heuristic_only:
+            logs.append(_make_log("web_research_agent", "INFO", f"Detected {detection.language_name} but no LLM is configured to translate; responding in English."))
+        else:
+            translated = translate_answer(final_answer, detection.language_name)
+            if translated and translated != final_answer:
+                final_answer = translated
+                logs.append(_make_log("web_research_agent", "INFO", f"Answer translated into {detection.language_name}."))
+
     logs.append(_make_log("query_api", "INFO", f"Dispatching QueryResponse with {len(api_citations)} citation(s) [HTTP 200 OK]"))
 
     return QueryResponse(
         query=request.query,
         jurisdiction=jurisdiction,
-        answer=crag_result.get("answer", ""),
+        answer=final_answer,
         confidence_score=crag_result.get("confidence_score", 0.95),
         confidence_level=crag_result.get("confidence_level", "HIGH"),
         citations=api_citations,
@@ -234,6 +372,9 @@ async def query_assistant(request: QueryRequest, db: Session = Depends(get_db)):
         route="CRAG",
         entities={},
         needs_clarification=crag_result.get("needs_classification_clarification", False),
+        detected_language=detection.language_name,
+        english_query=detection.english_query if not detection.is_english else None,
+        used_web_search=used_web_search,
         case_id=None,
         execution_logs=logs,
     )

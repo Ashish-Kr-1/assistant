@@ -4,7 +4,10 @@ const api = axios.create({
   baseURL: '/api/v1',
   withCredentials: true,
   headers: { 'Content-Type': 'application/json' },
-  timeout: 30_000,
+  // Multilingual queries now run detect-language -> CRAG retrieval/generation -> translate
+  // sequentially on the backend (see backend/app/api/v1/endpoints/query.py), which can approach
+  // 30s on its own before any live web search fallback is even considered — 60s gives headroom.
+  timeout: 60_000,
 });
 
 api.interceptors.response.use(

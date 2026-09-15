@@ -1,4 +1,7 @@
-langchain>=0.1.0
+langchain>=1.4.0
+langchain-cohere>=0.6.0
+langchain-openai>=1.6.2
+langchain-tavily>=0.2.18
 langgraph>=0.0.20
 qdrant-client>=1.7.0
 neo4j>=5.16.0

@@ -175,9 +175,30 @@ class CRAGPipeline:
     # --- CONDITIONAL ROUTER EDGES ---
 
     def _edge_post_grade(self, state: CRAGState) -> str:
-        """Determines routing following the CRAG relevance grading pass. Always routes to generation."""
-        # Always proceed to generate so the user receives a comprehensive answer
-        return "generate"
+        """Determines routing following the CRAG relevance grading pass (Rule R1 Safe Abstention)."""
+        correct_count = len(state.correct_chunks)
+        ambiguous_count = len([g for g in state.graded_chunks if g.outcome == GradingOutcome.AMBIGUOUS])
+        incorrect_count = len([g for g in state.graded_chunks if g.outcome == GradingOutcome.INCORRECT])
+
+        # If we have at least one high-confidence correct chunk
+        if correct_count >= 1:
+            return "generate"
+
+        # If all retrieved chunks are INCORRECT
+        if incorrect_count == len(state.graded_chunks) and len(state.graded_chunks) > 0:
+            if not state.fallback_triggered:
+                return "fallback"
+            return "abstain"  # Rule R1: Abstain when all sources fail
+
+        # If results are ambiguous and fallback hasn't fired yet
+        if ambiguous_count > 0 and not state.fallback_triggered:
+            return "fallback"
+
+        # If fallback already fired and still ambiguous, generate from ambiguous
+        if ambiguous_count > 0:
+            return "generate"
+
+        return "abstain"
 
     def _run_single_jurisdiction(
         self,

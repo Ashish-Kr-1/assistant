@@ -11,16 +11,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python 3.11
+      - name: Set up Python 3.12
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
-      - name: Install Dependencies
-        run: |
-          cd backend
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      - name: Run Pytest Unit & Integration Tests
-        run: |
-          cd backend
-          pytest
+          python-version: '3.12'
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+      - name: Install dependencies
+        run: uv sync
+      - name: Run backend + ml_pipeline test suites
+        # Mirrors the documented command in CLAUDE.md: both suites run together from the repo
+        # root, with PYTHONPATH covering `backend/` (for `app.*` imports) alongside the repo
+        # root itself (for the sibling `ml_pipeline` package `backend/app` code imports).
+        run: PYTHONPATH=.:backend uv run pytest ml_pipeline/tests/ backend/tests/ -v

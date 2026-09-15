@@ -66,6 +66,9 @@ function confidenceLabel(level) {
 function citationLabels(citations) {
   if (!Array.isArray(citations) || citations.length === 0) return undefined
   return citations.map((c) => {
+    if (c.source_type === "web") {
+      return { label: `Web: ${c.title || "Source"}`, url: c.official_url || "" }
+    }
     const statute = c.statute || c.treaty || c.act_name || "Source"
     const locator = c.section || c.rule || c.article || c.section_id || ""
     const label = locator ? `${statute}, ${locator}` : statute

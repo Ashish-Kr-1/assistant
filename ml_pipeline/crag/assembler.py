@@ -43,21 +43,23 @@ class OutputAssembler:
         """
         Builds the structured output dictionary.
         """
-        # If no regime text was supplied, provide helpful synthesized guidance
-        if not answers_by_regime:
-            fallback_answer = (
-                f"Based on current Ayurvedic IP and regulatory standards in India and internationally:\n\n"
-                f"- **Patent Protection & Traditional Knowledge**: Under Section 3(p) of the Patents Act, 1970, "
-                f"traditional Ayurvedic formulations or known properties are non-patentable. However, novel extraction processes, "
-                f"synergistic combinations with demonstrable enhanced efficacy (Section 3(d)), or standardized phytopharmaceuticals (Rule 122E) "
-                f"can qualify for patent protection.\n"
-                f"- **Regulatory Compliance**: Ayurvedic products can be licensed as Classical Medicines (First Schedule texts under Schedule T GMP), "
-                f"Patent & Proprietary Medicines (Rule 158B), or Ayurveda Aahara under FSSAI 2022 Regulations.\n"
-                f"- **Biodiversity & ABS**: Any commercial utilization or foreign collaboration involving Indian biological resources "
-                f"requires prior approval from the National Biodiversity Authority (NBA) under the Biological Diversity Act, 2002/2023."
-            )
-            answers_by_regime = {"national": fallback_answer}
-
+        # Rule R1: If abstained, return safe template — no fabricated fallback guidance when
+        # the graph found no verified statutory grounding.
+        if is_abstained or not answers_by_regime:
+            return {
+                "query": query,
+                "jurisdiction": jurisdiction,
+                "is_abstained": True,
+                "answer": cls.ABSTENTION_TEMPLATE,
+                "answers_by_regime": {},
+                "citations": [],
+                "confidence_score": 0.0,
+                "confidence_level": ConfidenceLevel.LOW.value,
+                "escalate_to_human": True,
+                "escalation_reason": "Insufficient verified statutory sources in corpus (Rule R1).",
+                "abs_guidance": None,
+                "disclaimer": cls.MANDATORY_DISCLAIMER
+            }
 
         # Rule R8: Calculate confidence score and level
         # Score derives from verification ratio and coverage of citations

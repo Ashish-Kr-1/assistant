@@ -31,14 +31,25 @@ def is_cohere_rate_limited() -> bool:
     return time.time() < _cohere_rate_limited_until
 
 
-def get_llm(temperature: float = 0.0, preferred_model: Optional[str] = None) -> Optional[BaseChatModel]:
+def get_llm(
+    temperature: float = 0.0,
+    preferred_model: Optional[str] = None,
+    timeout_seconds: Optional[float] = None,
+) -> Optional[BaseChatModel]:
     """
     Returns an initialized LangChain Chat model based on available environment variables.
     Priority:
     1. Explicit LLM_PROVIDER ('cohere', 'openai', 'gemini')
     2. Auto-detection: Cohere -> OpenAI -> Gemini
     3. None (falls back to deterministic statutory heuristics)
+
+    `timeout_seconds` overrides the LLM_TIMEOUT_SECONDS default (tuned short, for quick
+    single-shot calls) for callers whose completion is naturally longer-running — e.g.
+    translating a full answer or running a tool-calling agent loop (see
+    ml_pipeline/agents/web_research_agent.py) — without changing the fast default everywhere
+    else that relies on failing over to heuristics quickly.
     """
+    timeout = timeout_seconds if timeout_seconds is not None else LLM_TIMEOUT_SECONDS
     provider = os.getenv("LLM_PROVIDER", "auto").lower()
 
     # --- 1. COHERE (Prototype Default) ---
@@ -58,7 +69,7 @@ def get_llm(temperature: float = 0.0, preferred_model: Optional[str] = None) -> 
                 model=model,
                 temperature=temperature,
                 cohere_api_key=cohere_key,
-                timeout_seconds=LLM_TIMEOUT_SECONDS,
+                timeout_seconds=timeout,
                 max_retries=0,
             )
         except Exception as e:
@@ -79,7 +90,7 @@ def get_llm(temperature: float = 0.0, preferred_model: Optional[str] = None) -> 
                 model=model,
                 temperature=temperature,
                 api_key=openai_key,
-                timeout=LLM_TIMEOUT_SECONDS,
+                timeout=timeout,
             )
         except Exception as e:
             logger.error(f"Failed to initialize ChatOpenAI: {e}")
@@ -99,7 +110,7 @@ def get_llm(temperature: float = 0.0, preferred_model: Optional[str] = None) -> 
                 model=model,
                 temperature=temperature,
                 google_api_key=gemini_key,
-                timeout=LLM_TIMEOUT_SECONDS,
+                timeout=timeout,
             )
         except Exception as e:
             logger.error(f"Failed to initialize ChatGoogleGenerativeAI: {e}")

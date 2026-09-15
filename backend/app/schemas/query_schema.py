@@ -49,6 +49,10 @@ class CitationSchema(BaseModel):
     summary: str = ""
     chunk_id: Optional[str] = None
     effective_date: Optional[str] = None
+    source_type: str = Field(
+        "statutory",
+        description="'statutory' (static verified corpus) or 'web' (live web search result).",
+    )
 
 
 class QueryResponse(BaseModel):
@@ -80,3 +84,8 @@ class QueryResponse(BaseModel):
 
     # Real-time backend execution logs for frontend terminal display
     execution_logs: Optional[List[str]] = Field(default_factory=list)
+
+    # Live web research + multilingual metadata (web_research_agent port)
+    detected_language: Optional[str] = None
+    english_query: Optional[str] = None
+    used_web_search: bool = False

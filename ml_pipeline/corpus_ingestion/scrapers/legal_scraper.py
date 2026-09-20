@@ -1,5 +1,5 @@
 """
-REAL Corpus Ingestion Pipeline for IP-SAKTI Sahayak (SIH PS045)
+REAL Corpus Ingestion Pipeline for Charaka IP (SIH PS045)
 ================================================================
 Fetches statutory text from VERIFIED working public sources only:
   1. Indian National Statutes (Patents Act 1970, Biological Diversity Act 2002/2023,
@@ -833,7 +833,7 @@ def run_ingestion(persist_path: Optional[str] = None) -> List[LegalChunk]:
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
     logger.info("=" * 65)
-    logger.info("IP-SAKTI Corpus Ingestion — Real Verified Sources Only")
+    logger.info("Charaka IP Corpus Ingestion — Real Verified Sources Only")
     logger.info("=" * 65)
 
     scraper = RealLegalScraper()

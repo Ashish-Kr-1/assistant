@@ -1,5 +1,5 @@
 """
-IP-SAKTI Sahayak Corrective RAG (CRAG) Package
+Charaka IP Corrective RAG (CRAG) Package
 """
 from ml_pipeline.crag.schema import (
     LegalChunk,

@@ -1,5 +1,5 @@
 """
-Innovation Intake & Case Schemas (Phase 2 — IP-SAKTI Sahayak PS045)
+Innovation Intake & Case Schemas (Phase 2 — Charaka IP PS045)
 Defines the structured InnovationProfile, IntakeState, Case, and IntakeResponse
 contracts. Phase 2 answers only "what exactly is the user's innovation?" — it
 never contains a patentability, ABS-applicability, or compliance conclusion.

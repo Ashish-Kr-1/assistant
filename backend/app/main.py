@@ -22,6 +22,15 @@ app.add_middleware(
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
+# Mount the standalone Charaka IP agent app (root-level main.py: corpus stats/
+# versions/refresh, live connector search, Bhashini voice STT/TTS, and the
+# security/audit admin endpoints) so both backends run from this one process
+# instead of two separate uvicorn servers. The frontend's /api/v1/* contract
+# above is untouched; these just become additionally reachable under /agent.
+from main import app as charaka_agent_app  # noqa: E402  (repo root, via PYTHONPATH=.)
+
+app.mount("/agent", charaka_agent_app)
+
 
 @app.on_event("startup")
 async def _init_phase2_db():

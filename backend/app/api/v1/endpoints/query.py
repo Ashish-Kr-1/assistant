@@ -34,7 +34,7 @@ def _make_log(module: str, level: str, msg: str) -> str:
 @router.post("/query", response_model=QueryResponse)
 async def query_assistant(request: QueryRequest, db: Session = Depends(get_db)):
     """
-    Query Endpoint for IP-SAKTI Sahayak (SIH PS045).
+    Query Endpoint for Charaka IP (SIH PS045).
     Two Explicit Modes:
     1. 'query' (Default): Pure conversational legal, Ayurveda & IP Q&A powered by Cohere and Qdrant.
        Direct answers with statutory citations, zero intake questionnaires or intent blockages.
@@ -136,7 +136,7 @@ async def query_assistant(request: QueryRequest, db: Session = Depends(get_db)):
             query=request.query,
             jurisdiction=jurisdiction,
             answer=(
-                "Namaste! I am **IP-SAKTI Sahayak**, your specialized AI assistant for Intellectual Property, "
+                "Namaste! I am **Charaka IP**, your specialized AI assistant for Intellectual Property, "
                 "Traditional Knowledge, and Regulatory Guidance in Ayurveda across National and International regimes.\n\n"
                 "You are in **Query Mode**. Ask any question to receive a direct statutory analysis with verified citations:\n"
                 "- **Patentability Bars**: Section 3(p) Traditional Knowledge bar, Section 3(d) Enhanced Efficacy, Section 3(e) Synergistic Admixtures\n"
@@ -215,7 +215,7 @@ async def query_assistant(request: QueryRequest, db: Session = Depends(get_db)):
                 query=request.query,
                 jurisdiction=jurisdiction,
                 answer=(
-                    "I am **IP-SAKTI Sahayak**, specialized in Intellectual Property (IP), Traditional Knowledge, "
+                    "I am **Charaka IP**, specialized in Intellectual Property (IP), Traditional Knowledge, "
                     "regulatory licensing (AYUSH, FSSAI, CDSCO), and Access & Benefit Sharing (ABS) for Ayurveda.\n\n"
                     "I can assist you with:\n"
                     "- **Patentability & Traditional Knowledge**: Checking Section 3(p), 3(d), or 3(e) patent bars\n"

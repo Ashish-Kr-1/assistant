@@ -1,6 +1,6 @@
 class KnowledgeGraphSchema:
     """
-    Neo4j Knowledge Graph Schema definition for IP-SAKTI Sahayak.
+    Neo4j Knowledge Graph Schema definition for Charaka IP.
     Links Ayurvedic Herbs, Formulations, Statutes, Patent Bars, and ABS Obligations.
     """
 

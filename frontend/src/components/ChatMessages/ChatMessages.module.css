@@ -396,3 +396,38 @@
   border-top: 1px solid var(--border-hairline);
 }
 
+/* ---------- ChatGPT-style Streaming Cursor & Thinking Pill ---------- */
+
+.streamingCursor {
+  display: inline-block;
+  width: 8px;
+  height: 16px;
+  background: var(--accent-ochre);
+  vertical-align: -2px;
+  margin-left: 3px;
+  border-radius: 1px;
+  animation: cursorBlink 0.8s infinite;
+}
+
+@keyframes cursorBlink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.thinkingRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.thinkingStatusText {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+

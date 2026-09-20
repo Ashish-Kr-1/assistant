@@ -1,11 +1,11 @@
-# IP-SAKTI Sahayak (SIH PS045)
+# Charaka IP (SIH PS045)
 ## Complete System Architecture & Technology Stack Report
 
 ---
 
 ### Executive Summary
 
-**IP-SAKTI Sahayak** is an enterprise-grade, domain-specialized AI Legal & Regulatory Copilot built for Smart India Hackathon (SIH) Problem Statement PS045. It addresses the legal, intellectual property (IP), traditional knowledge, and regulatory compliance complexities surrounding Ayurvedic, Siddha, Unani, and Sowa-Rigpa (ASU) formulations and biotechnological innovations in India and international markets.
+**Charaka IP** is an enterprise-grade, domain-specialized AI Legal & Regulatory Copilot built for Smart India Hackathon (SIH) Problem Statement PS045. It addresses the legal, intellectual property (IP), traditional knowledge, and regulatory compliance complexities surrounding Ayurvedic, Siddha, Unani, and Sowa-Rigpa (ASU) formulations and biotechnological innovations in India and international markets.
 
 The system bridges the gap between traditional herbal medicine practitioners/startups and complex legal frameworks by providing two core modes of operation:
 1. **Query Mode (Direct Statutory Q&A)**: Instant, citation-backed legal analysis directly synthesizing statutory provisions, case law precedents, and patentability bars using Corrective Retrieval-Augmented Generation (CRAG) powered by Cohere and Qdrant.

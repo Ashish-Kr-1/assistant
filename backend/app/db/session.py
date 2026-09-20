@@ -1,5 +1,5 @@
 """
-Database session management (Phase 2 — IP-SAKTI Sahayak PS045).
+Database session management (Phase 2 — Charaka IP PS045).
 
 Reuses the project's existing PostgreSQL configuration (docker/docker-compose.yml,
 .env POSTGRES_* vars). If PostgreSQL isn't reachable — e.g. in local dev/test

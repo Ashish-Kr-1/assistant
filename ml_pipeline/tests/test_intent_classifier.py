@@ -1,5 +1,5 @@
 """
-Unit Tests for Phase 1 Intent + Entity Classifier (IP-SAKTI Sahayak PS045).
+Unit Tests for Phase 1 Intent + Entity Classifier (Charaka IP PS045).
 Covers all minimum required inputs, multilingual/Hinglish queries,
 entity extraction, confidence scoring, route mappings, and error handling.
 """

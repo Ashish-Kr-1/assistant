@@ -1,0 +1,384 @@
+{
+  "last_checked": "2026-09-20T10:04:31.060422+00:00",
+  "corpus_snapshot_id": "44dcaa8056d9657b",
+  "total_sources": 22,
+  "sources": {
+    "IN_patent_Patents_Act_1970": {
+      "title": "Patents Act 1970",
+      "url": "https://www.indiacode.nic.in/handle/123456789/1392",
+      "jurisdiction": "IN",
+      "ip_types": [
+        "patent"
+      ],
+      "hash": "62d2afaaf82bf5eb75ab012124f8a9c784e05cab775eef43a3d8ba8ff74dd6b7",
+      "first_seen": "2026-09-19T17:41:32.451858+00:00",
+      "last_verified": "2026-09-20T10:04:31.060422+00:00",
+      "version": 1
+    },
+    "IN_trademark_Trade_Marks_Act_1999": {
+      "title": "Trade Marks Act 1999",
+      "url": "https://www.indiacode.nic.in/handle/123456789/2064",
+      "jurisdiction": "IN",
+      "ip_types": [
+        "trademark"
+      ],
+      "hash": "d62340fbb7e2007258cb4cdcded3627cec88f319abf898a8284fef72892c4fa6",
+      "first_seen": "2026-09-19T17:41:32.451858+00:00",
+      "last_verified": "2026-09-20T10:04:31.060422+00:00",
+      "version": 1
+    },
+    "IN_copyright_Copyright_Act_1957": {
+      "title": "Copyright Act 1957",
+      "url": "https://www.indiacode.nic.in/handle/123456789/1367",
+      "jurisdiction": "IN",
+      "ip_types": [
+        "copyright"
+      ],
+      "hash": "7eb3bb55c4f90b499e69ae196d1c49e43288366b453a731eb2519ad4f85acd36",
+      "first_seen": "2026-09-19T17:41:32.451858+00:00",
+      "last_verified": "2026-09-20T10:04:31.060422+00:00",
+      "version": 1
+    },
+    "IN_gi_Geographical_Indications_of_Goods_Act_1999": {
+      "title": "Geographical Indications of Goods Act 1999",
+      "url": "https://www.indiacode.nic.in/handle/123456789/1396",
+      "jurisdiction": "IN",
+      "ip_types": [
+        "gi"
+      ],
+      "hash": "187c75718b57045850ac2cc06771319aceb35669136cb1e0ab73853bb78e26ce",
+      "first_seen": "2026-09-19T17:41:32.451858+00:00",
+      "last_verified": "2026-09-20T10:04:31.060422+00:00",
+      "version": 1
+    },
+    "IN_abs,patent_Biological_Diversity_Act_2002": {
+      "title": "Biological Diversity Act 2002",
+      "url": "https://www.indiacode.nic.in/handle/123456789/2046",
+      "jurisdiction": "IN",
+      "ip_types": [
+        "abs",
+        "patent"
+      ],
+      "hash": "8d9407edf95c5b104b8f080158da11b2eeb1ccc1d5c09d018da90a348f4e13d5",
+      "first_seen": "2026-09-19T17:41:32.451858+00:00",
+      "last_verified": "2026-09-20T10:04:31.060422+00:00",
+      "version": 1
+    },
+    "IN_ayush_Drugs_and_Cosmetics_Act_1940": {
+      "title": "Drugs and Cosmetics Act 1940",
+      "url": "https://www.indiacode.nic.in/handle/123456789/2265",
+      "jurisdiction": "IN",
+      "ip_types": [
+        "ayush"
+      ],
+      "hash": "d139a4a0cde261efe0bd1fcb685c639c5050f44dab8d49cebd787e1a58815f6b",
+      "first_seen": "2026-09-19T17:41:32.451858+00:00",
+      "last_verified": "2026-09-20T10:04:31.060422+00:00",
+      "version": 1
+    },
+    "IN_gi,patent_Protection_of_Plant_Varieties_and_Farmers_Rights_Act_2001": {
+      "title": "Protection of Plant Varieties and Farmers Rights Act 2001",
+      "url": "https://www.indiacode.nic.in/handle/123456789/2015",
+      "jurisdiction": "IN",
+      "ip_types": [
+        "patent",
+        "gi"
+      ],
+      "hash": "2c75b1189c80b5b073b0649377c53f70303edf8b73f604fe13c9df9572c9eccd",
+      "first_seen": "2026-09-19T17:41:32.451858+00:00",
+      "last_verified": "2026-09-20T10:04:31.060422+00:00",
+      "version": 1
+    },
+    "IN_patent_IP_India_Patent_Examination_Guidelines": {
+      "title": "IP India Patent Examination Guidelines",
+      "url": "https://ipindia.gov.in/writereaddata/Portal/IPOGuidelinesManuals/1_81_1_patent-examination-guidelines.pdf",
+      "jurisdiction": "IN",
+      "ip_types": [
+        "patent"
+      ],
+      "hash": "4a327d3f8b999601cb8479aa4b00abf50d564b57ed2c4a4f96e5438caf01deaf",
+      "first_seen": "2026-09-19T17:41:32.451858+00:00",
+      "last_verified": "2026-09-20T10:04:31.060422+00:00",
+      "version": 1
+    },
+    "IN_trademark_IP_India_Trade_Marks_Manual": {
+      "title": "IP India Trade Marks Manual",
+      "url": "https://ipindia.gov.in/writereaddata/Portal/IPOGuidelinesManuals/1_38_1_TM-Manual.pdf",
+      "jurisdiction": "IN",
+      "ip_types": [
+        "trademark"
+      ],
+      "hash": "c130809413d79c6a834010cc2ea8e8a18f5689608ac400b7164308c000429d26",
+      "first_seen": "2026-09-19T17:41:32.451858+00:00",
+      "last_verified": "2026-09-20T10:04:31.060422+00:00",
+      "version": 1
+    },
+    "IN_gi_IP_India_GI_Registry_—_Registered_GIs": {
+      "title": "IP India GI Registry — Registered GIs",
+      "url": "https://ipindia.gov.in/geographical-indications.htm",
+      "jurisdiction": "IN",
+      "ip_types": [
+        "gi"
+      ],
+      "hash": "f27b2d1efa1d455d3e9e1ca1dc42ddd83edd038326753e26f0503218dcb3c515",
+      "first_seen": "2026-09-19T17:41:32.451858+00:00",
+      "last_verified": "2026-09-20T10:04:31.060422+00:00",
+      "version": 1
+    },
+    "IN_patent,tkdl_TKDL_—_Traditional_Knowledge_Digital_Library_(Public_Disclosures)": {
+      "title": "TKDL — Traditional Knowledge Digital Library (Public Disclosures)",
+      "url": "https://www.tkdl.res.in",
+      "jurisdiction": "IN",
+      "ip_types": [
+        "tkdl",
+        "patent"
+      ],
+      "hash": "a29be93322779cb199bf2fec19dca844cd2064506470e3935da771384a59de50",
+      "first_seen": "2026-09-19T17:41:32.451858+00:00",
+      "last_verified": "2026-09-20T10:04:31.060422+00:00",
+      "version": 1
+    },
+    "IN_abs_National_Biodiversity_Authority_—_ABS_Guidelines": {
+      "title": "National Biodiversity Authority — ABS Guidelines",
+      "url": "https://nbaindia.org/content/23/19/1/guideline.html",
+      "jurisdiction": "IN",
+      "ip_types": [
+        "abs"
+      ],
+      "hash": "1c14186da9645ed9723232c3adeacafd547d6b81b6d038bc5a0e57ed21a87a3b",
+      "first_seen": "2026-09-19T17:41:32.451858+00:00",
+      "last_verified": "2026-09-20T10:04:31.060422+00:00",
+      "version": 1
+    },
+    "IN_abs_National_Biodiversity_Authority_—_Standard_Material_Transfer_Agreement": {
+      "title": "National Biodiversity Authority — Standard Material Transfer Agreement",
+      "url": "https://nbaindia.org/content/73/49/1/smta.html",
+      "jurisdiction": "IN",
+      "ip_types": [
+        "abs"
+      ],
+      "hash": "8a0d654a381647d9a105a6ab5fb4b18955365db6407eb8e5e4891b74b68d472b",
+      "first_seen": "2026-09-19T17:41:32.451858+00:00",
+      "last_verified": "2026-09-20T10:04:31.060422+00:00",
+      "version": 1
+    },
+    "IN_ayush_AYUSH_Ministry_—_Drugs_&_Cosmetics_Act_Rules_(ASU_Section)": {
+      "title": "AYUSH Ministry — Drugs & Cosmetics Act Rules (ASU Section)",
+      "url": "https://ayush.gov.in/about-the-systems/ayurveda",
+      "jurisdiction": "IN",
+      "ip_types": [
+        "ayush"
+      ],
+      "hash": "d41fd04c2665428dba2ecaca5646f7dc53b06a0c3b12fa59270aaffeab4b6bb3",
+      "first_seen": "2026-09-19T17:41:32.451858+00:00",
+      "last_verified": "2026-09-20T10:04:31.060422+00:00",
+      "version": 1
+    },
+    "IN_ayush_Ayurvedic_Pharmacopoeia_of_India_(Vol_I)": {
+      "title": "Ayurvedic Pharmacopoeia of India (Vol I)",
+      "url": "https://pharmacopoeia.ayush.gov.in",
+      "jurisdiction": "IN",
+      "ip_types": [
+        "ayush"
+      ],
+      "hash": "5d50c66ebc22c9c5f8b83883d31b16377ad67fe21d61b03041bc79e5070b0a72",
+      "first_seen": "2026-09-19T17:41:32.451858+00:00",
+      "last_verified": "2026-09-20T10:04:31.060422+00:00",
+      "version": 1
+    },
+    "INTL_copyright,gi,patent,trademark_TRIPS_Agreement_(WTO)": {
+      "title": "TRIPS Agreement (WTO)",
+      "url": "https://www.wto.org/english/docs_e/legal_e/27-trips_01_e.htm",
+      "jurisdiction": "INTL",
+      "ip_types": [
+        "patent",
+        "trademark",
+        "gi",
+        "copyright"
+      ],
+      "hash": "ab1a05a204c7a36038c74b35653c5de4fb24f5d653a0fdd9c544adc858b9f77c",
+      "first_seen": "2026-09-19T17:41:32.451858+00:00",
+      "last_verified": "2026-09-20T10:04:31.060422+00:00",
+      "version": 1
+    },
+    "INTL_abs_Convention_on_Biological_Diversity_(CBD)": {
+      "title": "Convention on Biological Diversity (CBD)",
+      "url": "https://www.cbd.int/doc/legal/cbd-en.pdf",
+      "jurisdiction": "INTL",
+      "ip_types": [
+        "abs"
+      ],
+      "hash": "2b4003bd59b086cd8bd9750a7c85fb4d6a4398165f7a874c8d0155c0ae0863e8",
+      "first_seen": "2026-09-19T17:41:32.451858+00:00",
+      "last_verified": "2026-09-20T10:04:31.060422+00:00",
+      "version": 1
+    },
+    "INTL_abs_Nagoya_Protocol_on_ABS": {
+      "title": "Nagoya Protocol on ABS",
+      "url": "https://www.cbd.int/abs/doc/protocol/nagoya-protocol-en.pdf",
+      "jurisdiction": "INTL",
+      "ip_types": [
+        "abs"
+      ],
+      "hash": "cd0e7e04cac8ee426c27c139e22fb79dc62567002967b91322dee04a0894c0e0",
+      "first_seen": "2026-09-19T17:41:32.451858+00:00",
+      "last_verified": "2026-09-20T10:04:31.060422+00:00",
+      "version": 1
+    },
+    "INTL_patent_Patent_Cooperation_Treaty_(PCT)": {
+      "title": "Patent Cooperation Treaty (PCT)",
+      "url": "https://wipolex-res.wipo.int/edocs/lexdocs/treaties/en/pct/trt_pct.pdf",
+      "jurisdiction": "INTL",
+      "ip_types": [
+        "patent"
+      ],
+      "hash": "e32908b4f93cb6559fe374133fddf885f90becc8b88238a7ffef8c2e73417d96",
+      "first_seen": "2026-09-19T17:41:32.451858+00:00",
+      "last_verified": "2026-09-20T10:04:31.060422+00:00",
+      "version": 1
+    },
+    "INTL_trademark_Madrid_Protocol_(International_TM_Registration)": {
+      "title": "Madrid Protocol (International TM Registration)",
+      "url": "https://wipolex-res.wipo.int/edocs/lexdocs/treaties/en/madrid_p/trt_madrid_p.pdf",
+      "jurisdiction": "INTL",
+      "ip_types": [
+        "trademark"
+      ],
+      "hash": "bab79d2b82caa571da2773f9143ac794f6c2adbe267cf3b447b179332519f418",
+      "first_seen": "2026-09-19T17:41:32.451858+00:00",
+      "last_verified": "2026-09-20T10:04:31.060422+00:00",
+      "version": 1
+    },
+    "INTL_gi_Lisbon_Agreement_(GI_/_Appellations_of_Origin)": {
+      "title": "Lisbon Agreement (GI / Appellations of Origin)",
+      "url": "https://wipolex-res.wipo.int/edocs/lexdocs/treaties/en/lisbon/trt_lisbon.pdf",
+      "jurisdiction": "INTL",
+      "ip_types": [
+        "gi"
+      ],
+      "hash": "a2b8586a2513603d09b0faa0050c83095ee1188a1fbb7319837f91eee37733e9",
+      "first_seen": "2026-09-19T17:41:32.451858+00:00",
+      "last_verified": "2026-09-20T10:04:31.060422+00:00",
+      "version": 1
+    },
+    "INTL_copyright_Berne_Convention_(Copyright)": {
+      "title": "Berne Convention (Copyright)",
+      "url": "https://wipolex-res.wipo.int/edocs/lexdocs/treaties/en/berne/trt_berne_001en.pdf",
+      "jurisdiction": "INTL",
+      "ip_types": [
+        "copyright"
+      ],
+      "hash": "d8c55305bf6aed4d75d06962b226d5f24beb75970cbe1135b4b91a998670559e",
+      "first_seen": "2026-09-19T17:41:32.451858+00:00",
+      "last_verified": "2026-09-20T10:04:31.060422+00:00",
+      "version": 1
+    }
+  },
+  "history": [
+    {
+      "timestamp": "2026-09-19T17:41:32.451858+00:00",
+      "snapshot_id": "44dcaa8056d9657b",
+      "new_count": 22,
+      "amended_count": 0,
+      "unchanged_count": 0
+    },
+    {
+      "timestamp": "2026-09-19T17:41:32.454947+00:00",
+      "snapshot_id": "44dcaa8056d9657b",
+      "new_count": 0,
+      "amended_count": 0,
+      "unchanged_count": 22
+    },
+    {
+      "timestamp": "2026-09-19T17:41:32.456450+00:00",
+      "snapshot_id": "44dcaa8056d9657b",
+      "new_count": 0,
+      "amended_count": 0,
+      "unchanged_count": 22
+    },
+    {
+      "timestamp": "2026-09-20T09:09:10.149084+00:00",
+      "snapshot_id": "44dcaa8056d9657b",
+      "new_count": 0,
+      "amended_count": 0,
+      "unchanged_count": 22
+    },
+    {
+      "timestamp": "2026-09-20T09:09:10.151929+00:00",
+      "snapshot_id": "44dcaa8056d9657b",
+      "new_count": 0,
+      "amended_count": 0,
+      "unchanged_count": 22
+    },
+    {
+      "timestamp": "2026-09-20T09:09:10.153774+00:00",
+      "snapshot_id": "44dcaa8056d9657b",
+      "new_count": 0,
+      "amended_count": 0,
+      "unchanged_count": 22
+    },
+    {
+      "timestamp": "2026-09-20T09:14:17.736931+00:00",
+      "snapshot_id": "44dcaa8056d9657b",
+      "new_count": 0,
+      "amended_count": 0,
+      "unchanged_count": 22
+    },
+    {
+      "timestamp": "2026-09-20T09:14:17.739361+00:00",
+      "snapshot_id": "44dcaa8056d9657b",
+      "new_count": 0,
+      "amended_count": 0,
+      "unchanged_count": 22
+    },
+    {
+      "timestamp": "2026-09-20T09:14:17.741326+00:00",
+      "snapshot_id": "44dcaa8056d9657b",
+      "new_count": 0,
+      "amended_count": 0,
+      "unchanged_count": 22
+    },
+    {
+      "timestamp": "2026-09-20T09:45:05.664623+00:00",
+      "snapshot_id": "44dcaa8056d9657b",
+      "new_count": 0,
+      "amended_count": 0,
+      "unchanged_count": 22
+    },
+    {
+      "timestamp": "2026-09-20T09:45:05.667201+00:00",
+      "snapshot_id": "44dcaa8056d9657b",
+      "new_count": 0,
+      "amended_count": 0,
+      "unchanged_count": 22
+    },
+    {
+      "timestamp": "2026-09-20T09:45:05.669364+00:00",
+      "snapshot_id": "44dcaa8056d9657b",
+      "new_count": 0,
+      "amended_count": 0,
+      "unchanged_count": 22
+    },
+    {
+      "timestamp": "2026-09-20T10:04:31.054719+00:00",
+      "snapshot_id": "44dcaa8056d9657b",
+      "new_count": 0,
+      "amended_count": 0,
+      "unchanged_count": 22
+    },
+    {
+      "timestamp": "2026-09-20T10:04:31.058283+00:00",
+      "snapshot_id": "44dcaa8056d9657b",
+      "new_count": 0,
+      "amended_count": 0,
+      "unchanged_count": 22
+    },
+    {
+      "timestamp": "2026-09-20T10:04:31.060422+00:00",
+      "snapshot_id": "44dcaa8056d9657b",
+      "new_count": 0,
+      "amended_count": 0,
+      "unchanged_count": 22
+    }
+  ]
+}

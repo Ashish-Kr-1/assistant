@@ -1,5 +1,5 @@
 """
-Innovation Intake Agent (Phase 2 — IP-SAKTI Sahayak PS045)
+Innovation Intake Agent (Phase 2 — Charaka IP PS045)
 
 Answers only: "What exactly is the user's innovation?"
 Never answers: "Is it patentable / does ABS apply / is it compliant?"

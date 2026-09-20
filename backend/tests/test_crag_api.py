@@ -48,7 +48,7 @@ def test_api_query_safe_abstention_r1():
     assert response.status_code == 200
     data = response.json()
     assert data["is_abstained"] is True
-    assert "IP-SAKTI Sahayak" in data["answer"]
+    assert "Charaka IP" in data["answer"]
 
 
 def test_api_query_r9_classification_gate():

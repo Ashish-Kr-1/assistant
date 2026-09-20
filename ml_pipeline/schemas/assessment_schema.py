@@ -1,5 +1,5 @@
 """
-Phase 3 — Innovation Classification & Legal Domain Mapping (IP-SAKTI Sahayak PS045)
+Phase 3 — Innovation Classification & Legal Domain Mapping (Charaka IP PS045)
 
 Defines the CaseAssessment schema produced by the Case Assessment Agent.
 

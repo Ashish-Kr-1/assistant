@@ -1,5 +1,5 @@
 """
-Vector Store Manager for CRAG (IP-SAKTI Sahayak PS045)
+Vector Store Manager for CRAG (Charaka IP PS045)
 Integrates with Qdrant for metadata-filtered hybrid retrieval enforcing rules R4, R7, and R10.
 
 Embedding Strategy (priority order):

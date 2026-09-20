@@ -1,5 +1,5 @@
 """
-Intent and Entity Classification Schemas (Phase 1 — IP-SAKTI Sahayak PS045)
+Intent and Entity Classification Schemas (Phase 1 — Charaka IP PS045)
 Defines the canonical enums, entity extraction models, route mappings,
 and final IntentResult contract.
 """

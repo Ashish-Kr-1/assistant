@@ -1,5 +1,5 @@
 """
-SQLAlchemy ORM models (Phase 2 — IP-SAKTI Sahayak PS045).
+SQLAlchemy ORM models (Phase 2 — Charaka IP PS045).
 
 A single `cases` table holds the Case envelope plus the InnovationProfile and
 IntakeState as JSON columns. This keeps persistence simple (no research report

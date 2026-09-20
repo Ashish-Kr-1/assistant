@@ -19,7 +19,7 @@ async def escalate_to_facilitator(request: EscalationRequest):
     """
     return {
         "status": "SUCCESS",
-        "reference_ticket_id": "IP-SAKTI-2026-8942",
+        "reference_ticket_id": "Charaka IP-2026-8942",
         "message": "Your query has been routed to the AYUSH IP Facilitation Panel. A registered Patent Agent will contact you.",
         "matched_facilitators": [
             {

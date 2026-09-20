@@ -1,5 +1,5 @@
 """
-Neo4j Knowledge Graph Builder for IP-SAKTI Sahayak
+Neo4j Knowledge Graph Builder for Charaka IP
 Populates nodes and edges linking Ayurvedic Herbs, Formulations, Statutes, and Patent Bars.
 """
 

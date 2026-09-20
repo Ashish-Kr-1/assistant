@@ -11,7 +11,7 @@ load_dotenv(Path(__file__).resolve().parents[3] / ".env")
 
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "IP-SAKTI Sahayak Backend"
+    PROJECT_NAME: str = "Charaka IP Backend"
     API_V1_STR: str = "/api/v1"
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
     

@@ -17,7 +17,7 @@ class GroundedGenerator:
     Synthesizes authoritative, helpful legal and regulatory answers for Ayurveda innovations.
     """
 
-    SYSTEM_PROMPT = """You are IP-SAKTI Sahayak, an authoritative, friendly, and comprehensive AI legal & regulatory assistant specializing in Ayurveda, Traditional Knowledge, Intellectual Property (IP), Drug & Food Licensing (AYUSH, FSSAI, CDSCO), and Access & Benefit Sharing (ABS).
+    SYSTEM_PROMPT = """You are Charaka IP, an authoritative, friendly, and comprehensive AI legal & regulatory assistant specializing in Ayurveda, Traditional Knowledge, Intellectual Property (IP), Drug & Food Licensing (AYUSH, FSSAI, CDSCO), and Access & Benefit Sharing (ABS).
 
 Guidelines:
 - Answer the user's inquiry thoroughly, clearly, and practically using clean markdown formatting (headings, bullet points, bold key terms).

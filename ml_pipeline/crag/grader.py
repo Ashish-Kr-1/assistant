@@ -8,6 +8,7 @@ import os
 import re
 import json
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from typing import List, Optional
 from ml_pipeline.crag.schema import (
     LegalChunk,
@@ -62,7 +63,15 @@ Output JSON format strictly:
         if heuristic_res.outcome == GradingOutcome.CORRECT:
             return heuristic_res
 
-        if self.llm:
+        # The pipeline (and this grader) is a process-wide singleton, so once Cohere
+        # rate-limits us the circuit breaker set in get_llm() would never be re-checked —
+        # self.llm was already resolved to a live client at construction time and would
+        # otherwise keep firing doomed 429 calls (each burning the request timeout) for
+        # the rest of the process's life. Re-check the breaker on every call instead.
+        from ml_pipeline.crag.llm_factory import is_cohere_rate_limited
+        if self.llm and is_cohere_rate_limited():
+            logger.info("Cohere circuit breaker active; skipping LLM grading call for this chunk.")
+        elif self.llm:
             try:
                 prompt = (
                     f"{self.SYSTEM_PROMPT}\n\n"
@@ -172,5 +181,10 @@ Output JSON format strictly:
             )
 
     def grade_batch(self, query: str, chunks: List[LegalChunk]) -> List[GradedChunk]:
-        """Grades all retrieved chunks for a query."""
-        return [self.grade_chunk(query, chunk) for chunk in chunks]
+        """Grades all retrieved chunks for a query. Each chunk's LLM call (when the
+        heuristic doesn't already resolve it) is an independent network round-trip,
+        so they run concurrently rather than one-by-one to cut wall-clock latency."""
+        if len(chunks) <= 1:
+            return [self.grade_chunk(query, chunk) for chunk in chunks]
+        with ThreadPoolExecutor(max_workers=len(chunks)) as executor:
+            return list(executor.map(lambda c: self.grade_chunk(query, c), chunks))

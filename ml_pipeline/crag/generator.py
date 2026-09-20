@@ -6,6 +6,7 @@ enforcing Rule R4 (strict jurisdiction separation).
 
 import os
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from typing import List, Dict, Tuple, Optional
 from ml_pipeline.crag.schema import LegalChunk, JurisdictionType
 
@@ -51,23 +52,44 @@ Guidelines:
         if not intl_chunks and chunks and jurisdiction == JurisdictionType.INTERNATIONAL:
             intl_chunks = chunks
 
-        answers: Dict[str, str] = {}
+        sections: Dict[str, Tuple[List[LegalChunk], str]] = {}
 
         if jurisdiction in [JurisdictionType.NATIONAL, JurisdictionType.BOTH]:
-            answers["national"] = self._generate_section(query, nat_chunks, "National (India) Legal Regime")
+            sections["national"] = (nat_chunks, "National (India) Legal Regime")
 
         if jurisdiction in [JurisdictionType.INTERNATIONAL, JurisdictionType.BOTH]:
-            answers["international"] = self._generate_section(query, intl_chunks, "International Legal Regime")
+            sections["international"] = (intl_chunks, "International Legal Regime")
 
         # Guarantee at least one section is returned
-        if not answers:
-            answers["national"] = self._generate_section(query, chunks, "National (India) Legal Regime")
+        if not sections:
+            sections["national"] = (chunks, "National (India) Legal Regime")
+
+        # jurisdiction=BOTH means two independent LLM calls (national + international);
+        # run them concurrently rather than sequentially to cut wall-clock latency.
+        if len(sections) <= 1:
+            answers = {
+                regime: self._generate_section(query, secs_chunks, label)
+                for regime, (secs_chunks, label) in sections.items()
+            }
+        else:
+            with ThreadPoolExecutor(max_workers=len(sections)) as executor:
+                futures = {
+                    regime: executor.submit(self._generate_section, query, secs_chunks, label)
+                    for regime, (secs_chunks, label) in sections.items()
+                }
+                answers = {regime: future.result() for regime, future in futures.items()}
 
         return answers
 
     def _generate_section(self, query: str, chunks: List[LegalChunk], regime_label: str) -> str:
         """Generates grounded, comprehensive text for a specific jurisdiction regime."""
-        if self.llm:
+        # Singleton pipeline: self.llm was resolved once at construction, so re-check the
+        # Cohere circuit breaker on every call rather than firing a doomed 429 request that
+        # just burns the request timeout (see grader.py for the same fix).
+        from ml_pipeline.crag.llm_factory import is_cohere_rate_limited
+        if self.llm and is_cohere_rate_limited():
+            logger.info("Cohere circuit breaker active; skipping LLM generation call for this section.")
+        elif self.llm:
             try:
                 context_blocks = "\n\n".join(
                     f"[{c.chunk_id}] {c.act_name} ({c.section_id}, {c.effective_date}):\n{c.text}"

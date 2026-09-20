@@ -1,8 +1,8 @@
-# Technical & Legal System Architecture - IP-SAKTI Sahayak
+# Technical & Legal System Architecture - Charaka IP
 
 ## 1. System Overview
 
-**IP-SAKTI Sahayak** is designed as a multi-tier, agentic RAG system tailored for Intellectual Property and Regulatory Compliance in Ayurveda across Indian (National) and Global (International) legal regimes.
+**Charaka IP** is designed as a multi-tier, agentic RAG system tailored for Intellectual Property and Regulatory Compliance in Ayurveda across Indian (National) and Global (International) legal regimes.
 
 ---
 

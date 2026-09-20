@@ -1,5 +1,5 @@
 """
-Phase 3 — Case Assessment Agent (IP-SAKTI Sahayak PS045)
+Phase 3 — Case Assessment Agent (Charaka IP PS045)
 
 Implements the 5-subpart deterministic classification and mapping pipeline:
 

@@ -1,5 +1,5 @@
 """
-Deterministic Quick Rules & Entity Extraction (Phase 1 — IP-SAKTI Sahayak PS045)
+Deterministic Quick Rules & Entity Extraction (Phase 1 — Charaka IP PS045)
 Provides cheap, O(1) and regex-based classification for obvious intents:
 - Greetings / CHAT (bypasses CRAG completely)
 - Clear IP Protection requests

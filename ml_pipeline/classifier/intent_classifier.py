@@ -1,5 +1,5 @@
 """
-Intent + Entity Classifier (Phase 1 — IP-SAKTI Sahayak PS045)
+Intent + Entity Classifier (Phase 1 — Charaka IP PS045)
 Orchestrates:
 1. Message preprocessing & normalization
 2. Deterministic fast-path rules (bypassing CRAG for CHAT, immediate regex routing)
@@ -33,7 +33,7 @@ class IntentClassifier:
     Stateless, privacy-compliant, zero-hallucination routing layer.
     """
 
-    LLM_CLASSIFICATION_PROMPT = """You are the intent and entity classification layer of IP-SAKTI Sahayak.
+    LLM_CLASSIFICATION_PROMPT = """You are the intent and entity classification layer of Charaka IP.
 
 Your ONLY job is to determine the user's intent, extract relevant routing entities, and select the appropriate system route.
 

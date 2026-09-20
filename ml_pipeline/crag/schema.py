@@ -1,5 +1,5 @@
 """
-CRAG Schema Definitions (IP-SAKTI Sahayak PS045)
+CRAG Schema Definitions (Charaka IP PS045)
 Defines data structures for Legal Chunks, Grader Outcomes, Verification,
 State Models, and Guardrails (R1-R10).
 """

@@ -1,5 +1,5 @@
 """
-Case Service (Phase 2 — IP-SAKTI Sahayak PS045).
+Case Service (Phase 2 — Charaka IP PS045).
 
 Owns the CHECK ACTIVE CASE -> CREATE/UPDATE -> COLLECT -> VALIDATE -> SAVE flow.
 Never triggers research, classification, or any downstream Phase 3+ engine —

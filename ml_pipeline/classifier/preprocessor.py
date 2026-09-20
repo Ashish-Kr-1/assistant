@@ -1,5 +1,5 @@
 """
-Message Preprocessor for Phase 1 (IP-SAKTI Sahayak PS045)
+Message Preprocessor for Phase 1 (Charaka IP PS045)
 Normalizes user messages, handles unicode, detects Indic scripts,
 and prepares text for deterministic matching and LLM fallback.
 """

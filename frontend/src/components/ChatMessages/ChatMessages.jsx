@@ -251,8 +251,15 @@ export default function ChatMessages({ messages, isTyping, onFollowUpClick, onGe
           <Fragment key={msg.id}>
             <div className={`${styles.msgRow} ${styles[msg.role]}`}>
               <div className={`${styles.msgBubble} ${msg.role === "assistant" ? styles.nmRaised : ""}`}>
-                {msg.role === "assistant" ? renderMarkdown(msg.text) : msg.text}
-                {msg.citations && (
+                {msg.role === "assistant" ? (
+                  <>
+                    {renderMarkdown(msg.text)}
+                    {msg.isStreaming && <span className={styles.streamingCursor} aria-hidden="true" />}
+                  </>
+                ) : (
+                  msg.text
+                )}
+                {!msg.isStreaming && msg.citations && msg.citations.length > 0 && (
                   <div className={styles.msgMeta}>
                     {msg.citations.map((c) =>
                       c.url ? (
@@ -322,9 +329,14 @@ export default function ChatMessages({ messages, isTyping, onFollowUpClick, onGe
       {isTyping && (
         <div className={`${styles.msgRow} ${styles.assistant}`}>
           <div className={`${styles.msgBubble} ${styles.nmRaised} ${styles.typingBubble}`}>
-            <span className={styles.typingDot} />
-            <span className={styles.typingDot} />
-            <span className={styles.typingDot} />
+            <div className={styles.thinkingRow}>
+              <span className={styles.typingDot} />
+              <span className={styles.typingDot} />
+              <span className={styles.typingDot} />
+              <span className={styles.thinkingStatusText}>
+                Retrieving legal corpus &amp; generating response…
+              </span>
+            </div>
           </div>
         </div>
       )}

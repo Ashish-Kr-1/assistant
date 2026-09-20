@@ -124,6 +124,84 @@ export default function ChatBot() {
       : `conv-${Date.now()}-${Math.random().toString(16).slice(2)}`
   )
 
+  const streamTimerRef = useRef(null)
+
+  function streamResponse(messageId, fullAnswer, meta = {}) {
+    if (streamTimerRef.current) {
+      clearInterval(streamTimerRef.current)
+      streamTimerRef.current = null
+    }
+
+    const answerStr = fullAnswer || ""
+
+    // Mount the initial assistant message in streaming state
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: messageId,
+        role: "assistant",
+        text: "",
+        isStreaming: true,
+        citations: undefined,
+        confidence: undefined,
+        escalate: meta.escalate || false,
+        assessment: null,
+        caseId: meta.caseId || null,
+        followUps: undefined,
+      },
+    ])
+    setIsTyping(false)
+
+    // Tokenize text into chunks (words + spaces + punctuation)
+    const tokens = answerStr.match(/(\s+|\S+)/g) || [answerStr]
+    let tokenIdx = 0
+    let accumulated = ""
+
+    // Dynamically pace streaming: 1-3 tokens per tick
+    const step = tokens.length > 300 ? 3 : tokens.length > 100 ? 2 : 1
+    const delay = tokens.length > 300 ? 12 : 18
+
+    streamTimerRef.current = setInterval(() => {
+      if (!isMountedRef.current) {
+        clearInterval(streamTimerRef.current)
+        streamTimerRef.current = null
+        return
+      }
+
+      if (tokenIdx < tokens.length) {
+        const nextChunk = tokens.slice(tokenIdx, tokenIdx + step).join("")
+        tokenIdx += step
+        accumulated += nextChunk
+
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === messageId ? { ...m, text: accumulated } : m
+          )
+        )
+      } else {
+        clearInterval(streamTimerRef.current)
+        streamTimerRef.current = null
+
+        // Finalize: remove cursor, reveal citations, confidence & assessment panels
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === messageId
+              ? {
+                  ...m,
+                  text: answerStr,
+                  isStreaming: false,
+                  citations: meta.citations,
+                  confidence: meta.confidence,
+                  assessment: meta.assessment,
+                  followUps: meta.followUps,
+                }
+              : m
+          )
+        )
+      }
+    }, delay)
+  }
+
   function handleModeChange(newMode) {
     setMode(newMode)
     if (newMode === "query") {
@@ -139,6 +217,7 @@ export default function ChatBot() {
     isMountedRef.current = true
     return () => {
       isMountedRef.current = false
+      if (streamTimerRef.current) clearInterval(streamTimerRef.current)
     }
   }, [])
 
@@ -250,20 +329,18 @@ export default function ChatBot() {
         }
       }
 
-      setMessages((prev) => [
-        ...prev,
+      streamResponse(
+        `a-${Date.now()}`,
+        data.answer,
         {
-          id: `a-${Date.now()}`,
-          role: "assistant",
-          text: data.answer,
           citations: citationLabels(data.citations),
           confidence: confidenceLabel(data.confidence_level),
           escalate: data.escalate_to_human,
-          assessment,   // Phase 3 assessment panel (null if in query mode or not yet ready)
+          assessment,
           caseId: mode === "deep_research" ? data.case_id : null,
           followUps,
-        },
-      ])
+        }
+      )
 
       if (mode === "deep_research" && data.case_id) {
         setActiveCase({
@@ -362,19 +439,17 @@ export default function ChatBot() {
         } catch (_) {}
       }
 
-      setMessages((prev) => [
-        ...prev,
+      streamResponse(
+        `a-${Date.now()}`,
+        data.answer || "Innovation intake received. Case profile registered.",
         {
-          id: `a-${Date.now()}`,
-          role: "assistant",
-          text: data.answer || "Innovation intake received. Case profile registered.",
           citations: citationLabels(data.citations),
           confidence: confidenceLabel(data.confidence_level),
           assessment,
           caseId: data.case_id,
           followUps: assessment?.research_plan?.recommended_crag_queries?.slice(0, 3),
-        },
-      ])
+        }
+      )
 
       if (data.case_id) {
         setActiveCase({

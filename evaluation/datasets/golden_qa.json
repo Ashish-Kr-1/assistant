@@ -1,0 +1,505 @@
+[
+  {
+    "id": "Q001",
+    "category": "patent_india",
+    "question": "What is Section 3(p) of the Indian Patents Act?",
+    "expected_ip_type": "patent",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["section 3(p)", "traditional knowledge", "patents act"],
+    "must_not_contain": ["I don't know", "cannot answer"],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q002",
+    "category": "patent_india",
+    "question": "Can I patent an Ayurvedic formulation based on turmeric for wound healing?",
+    "expected_ip_type": "patent",
+    "expected_jurisdiction": "BOTH",
+    "must_cite_keywords": ["section 3(p)", "tkdl", "turmeric", "prior art"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q003",
+    "category": "patent_india",
+    "question": "What does Section 3(d) of the Patents Act say about pharmaceutical patents?",
+    "expected_ip_type": "patent",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["section 3(d)", "efficacy", "therapeutic"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q004",
+    "category": "patent_india",
+    "question": "What is the inventive step requirement under the Indian Patents Act?",
+    "expected_ip_type": "patent",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["inventive step", "patents act", "obvious"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q005",
+    "category": "patent_india",
+    "question": "What is a compulsory license under the Indian Patents Act?",
+    "expected_ip_type": "patent",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["compulsory license", "section 84", "patents act"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q006",
+    "category": "patent_india",
+    "question": "How do I file a patent application in India?",
+    "expected_ip_type": "patent",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["patent", "application", "india", "filing"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q007",
+    "category": "patent_india",
+    "question": "What is the term of patent protection in India?",
+    "expected_ip_type": "patent",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["20 years", "patent", "term", "section"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q008",
+    "category": "trademark_india",
+    "question": "What are the absolute grounds for refusal of trademark registration in India?",
+    "expected_ip_type": "trademark",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["section 9", "absolute grounds", "trade marks act"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q009",
+    "category": "trademark_india",
+    "question": "Can I register Chyawanprash as a trademark in India?",
+    "expected_ip_type": "trademark",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["section 9", "generic", "descriptive", "trade marks act"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q010",
+    "category": "trademark_india",
+    "question": "What is passing off in Indian trademark law?",
+    "expected_ip_type": "trademark",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["passing off", "section 27", "unregistered"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q011",
+    "category": "gi_india",
+    "question": "What is a Geographical Indication under Indian law?",
+    "expected_ip_type": "gi",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["geographical indication", "gi act", "1999"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q012",
+    "category": "gi_india",
+    "question": "Is Darjeeling tea a Geographical Indication in India?",
+    "expected_ip_type": "gi",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["geographical indication", "darjeeling", "tea"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q013",
+    "category": "gi_india",
+    "question": "Can a GI be assigned or licensed in India?",
+    "expected_ip_type": "gi",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["gi act", "assignable", "authorized user"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q014",
+    "category": "copyright_india",
+    "question": "Is an ancient Ayurvedic text in Sanskrit protected by copyright in India?",
+    "expected_ip_type": "copyright",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["public domain", "copyright act", "ancient"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q015",
+    "category": "copyright_india",
+    "question": "What is the term of copyright protection in India?",
+    "expected_ip_type": "copyright",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["60 years", "copyright act", "life"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q016",
+    "category": "ayush_india",
+    "question": "What is Rule 158-B of the Drugs and Cosmetics Act for AYUSH medicines?",
+    "expected_ip_type": "ayush",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["rule 158-b", "classical", "drugs and cosmetics", "ayush"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q017",
+    "category": "ayush_india",
+    "question": "What is the difference between classical and proprietary Ayurvedic medicines in India?",
+    "expected_ip_type": "ayush",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["classical", "proprietary", "schedule", "drugs and cosmetics"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q018",
+    "category": "abs_india",
+    "question": "Do I need NBA clearance before filing a patent on a plant-based medicine?",
+    "expected_ip_type": "abs",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["nba", "national biodiversity authority", "section 6", "biological diversity act"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q019",
+    "category": "abs_india",
+    "question": "What is the Biological Diversity Act 2002 in India?",
+    "expected_ip_type": "abs",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["biological diversity act", "2002", "biodiversity"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q020",
+    "category": "tkdl",
+    "question": "What is the Traditional Knowledge Digital Library (TKDL)?",
+    "expected_ip_type": "tkdl",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["tkdl", "traditional knowledge", "prior art"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q021",
+    "category": "tkdl",
+    "question": "How did India use TKDL to challenge the US turmeric patent?",
+    "expected_ip_type": "tkdl",
+    "expected_jurisdiction": "BOTH",
+    "must_cite_keywords": ["turmeric", "csir", "prior art", "revocation"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q022",
+    "category": "international",
+    "question": "What is the Nagoya Protocol on Access and Benefit Sharing?",
+    "expected_ip_type": "abs",
+    "expected_jurisdiction": "INTL",
+    "must_cite_keywords": ["nagoya protocol", "access", "benefit sharing", "cbd"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q023",
+    "category": "international",
+    "question": "What is TRIPS Article 27 on patentable subject matter?",
+    "expected_ip_type": "patent",
+    "expected_jurisdiction": "INTL",
+    "must_cite_keywords": ["trips", "article 27", "patentable"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q024",
+    "category": "international",
+    "question": "What is the Patent Cooperation Treaty (PCT)?",
+    "expected_ip_type": "patent",
+    "expected_jurisdiction": "INTL",
+    "must_cite_keywords": ["pct", "patent cooperation treaty", "international"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q025",
+    "category": "international",
+    "question": "What is the Madrid System for international trademark registration?",
+    "expected_ip_type": "trademark",
+    "expected_jurisdiction": "INTL",
+    "must_cite_keywords": ["madrid", "trademark", "international", "wipo"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q026",
+    "category": "patent_india",
+    "question": "What is Section 3(e) of the Patents Act regarding admixtures?",
+    "expected_ip_type": "patent",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["section 3(e)", "admixture", "synergy", "patents act"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q027",
+    "category": "patent_india",
+    "question": "What is the Novartis Glivec case and its significance for Indian patent law?",
+    "expected_ip_type": "patent",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["novartis", "glivec", "section 3(d)", "efficacy", "evergreening"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q028",
+    "category": "patent_india",
+    "question": "What is Section 3(j) of the Indian Patents Act?",
+    "expected_ip_type": "patent",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["section 3(j)", "plant", "animal", "biological"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q029",
+    "category": "trademark_india",
+    "question": "What are the relative grounds for refusal of trademark registration under the Trade Marks Act 1999?",
+    "expected_ip_type": "trademark",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["section 11", "relative grounds", "trade marks act", "conflict"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q030",
+    "category": "gi_india",
+    "question": "How does the Lisbon Agreement relate to Geographical Indications?",
+    "expected_ip_type": "gi",
+    "expected_jurisdiction": "INTL",
+    "must_cite_keywords": ["lisbon", "geographical indication", "wipo"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q031",
+    "category": "copyright_india",
+    "question": "What is the originality standard for copyright in India after Eastern Book Company v DB Modak?",
+    "expected_ip_type": "copyright",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["eastern book company", "modicum of creativity", "originality"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q032",
+    "category": "patent_india",
+    "question": "What is the biological origin disclosure requirement for Indian patent applications?",
+    "expected_ip_type": "patent",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["biological", "disclosure", "origin", "section 10"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q033",
+    "category": "abs_india",
+    "question": "What is benefit sharing under the Biological Diversity Act?",
+    "expected_ip_type": "abs",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["benefit sharing", "biological diversity act", "nba"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q034",
+    "category": "patent_india",
+    "question": "Can a process for extraction of a herbal compound be patented in India?",
+    "expected_ip_type": "patent",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["process", "patent", "section 3(p)", "novel"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q035",
+    "category": "ayush_india",
+    "question": "What are the licensing requirements for manufacturing AYUSH proprietary medicines in India?",
+    "expected_ip_type": "ayush",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["license", "manufacturing", "ayush", "drugs and cosmetics"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q036",
+    "category": "patent_india",
+    "question": "What is the Bishwanath Prasad judgment's importance for Indian patent law?",
+    "expected_ip_type": "patent",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["bishwanath prasad", "inventive step", "workshop modification"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q037",
+    "category": "international",
+    "question": "What is the Berne Convention and how does it protect copyright internationally?",
+    "expected_ip_type": "copyright",
+    "expected_jurisdiction": "INTL",
+    "must_cite_keywords": ["berne convention", "copyright", "international"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q038",
+    "category": "gi_india",
+    "question": "What is Navara rice and why is it protected under GI in India?",
+    "expected_ip_type": "gi",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["navara", "rice", "gi", "kerala"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q039",
+    "category": "patent_india",
+    "question": "भारतीय पेटेंट अधिनियम की धारा 3(पी) क्या है?",
+    "expected_ip_type": "patent",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["section 3(p)", "traditional knowledge", "patent"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"],
+    "language": "hi"
+  },
+  {
+    "id": "Q040",
+    "category": "abs_india",
+    "question": "नागोया प्रोटोकॉल क्या है?",
+    "expected_ip_type": "abs",
+    "expected_jurisdiction": "INTL",
+    "must_cite_keywords": ["nagoya", "protocol", "benefit"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"],
+    "language": "hi"
+  },
+  {
+    "id": "Q041",
+    "category": "patent_india",
+    "question": "Ayurveda formulation patent kaise kare?",
+    "expected_ip_type": "patent",
+    "expected_jurisdiction": "BOTH",
+    "must_cite_keywords": ["patent", "ayurveda", "section"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"],
+    "language": "hinglish"
+  },
+  {
+    "id": "Q042",
+    "category": "patent_india",
+    "question": "What is a patent of addition under the Indian Patents Act?",
+    "expected_ip_type": "patent",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["patent of addition", "patents act", "improvement"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q043",
+    "category": "trademark_india",
+    "question": "How long does trademark protection last in India?",
+    "expected_ip_type": "trademark",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["10 years", "trademark", "renewal", "trade marks act"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q044",
+    "category": "patent_india",
+    "question": "What is the EPO neem patent revocation and what does it mean for biopiracy?",
+    "expected_ip_type": "tkdl",
+    "expected_jurisdiction": "INTL",
+    "must_cite_keywords": ["neem", "epo", "revocation", "traditional knowledge"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q045",
+    "category": "abs_india",
+    "question": "What is the role of the National Biodiversity Authority (NBA) in India?",
+    "expected_ip_type": "abs",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["national biodiversity authority", "nba", "biological diversity act"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q046",
+    "category": "copyright_india",
+    "question": "Can a database of Ayurvedic formulas be protected by copyright in India?",
+    "expected_ip_type": "copyright",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["database", "copyright", "originality", "modicum of creativity"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q047",
+    "category": "patent_india",
+    "question": "What is the difference between a product patent and a process patent in India?",
+    "expected_ip_type": "patent",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["product patent", "process patent", "patents act"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q048",
+    "category": "international",
+    "question": "How does TRIPS Article 27.3(b) affect the patentability of plants in India?",
+    "expected_ip_type": "patent",
+    "expected_jurisdiction": "BOTH",
+    "must_cite_keywords": ["trips", "article 27.3", "plant", "biological"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q049",
+    "category": "ayush_india",
+    "question": "What is the Charaka Samhita and is it in the public domain?",
+    "expected_ip_type": "ayush",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["charaka samhita", "public domain", "ayurvedic"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  },
+  {
+    "id": "Q050",
+    "category": "patent_india",
+    "question": "What is Section 8 of the Indian Patents Act regarding foreign filing?",
+    "expected_ip_type": "patent",
+    "expected_jurisdiction": "IN",
+    "must_cite_keywords": ["section 8", "foreign filing", "disclosure", "patents act"],
+    "must_not_contain": [],
+    "expected_confidence": ["HIGH", "MEDIUM"]
+  }
+]

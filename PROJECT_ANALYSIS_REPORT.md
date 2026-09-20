@@ -1,7 +1,7 @@
-# IP-SAKTI Sahayak (SIH PS045) — Comprehensive Project Analysis Report
+# Charaka IP (SIH PS045) — Comprehensive Project Analysis Report
 
 **Date:** September 14, 2026  
-**System:** IP-SAKTI Sahayak (PS045)  
+**System:** Charaka IP (PS045)  
 **Domain:** Multilingual, Source-Cited AI Assistant for Intellectual Property & Regulatory Guidance in Ayurveda across National (India) and International Regimes  
 
 ---
@@ -36,7 +36,7 @@ Researchers, Ayurvedic practitioners (Vaidyas), MSMEs, and biotech startups work
 
 5. **The AI Hallucination Liability in Legal Tech**:
    - Generic large language models frequently invent non-existent statutory sections, conflate US/EPC patent doctrines with Indian law, fail to flag mandatory NBA approval requirements, and confuse classical drug licensing with FSSAI regulations.
-   - **IP-SAKTI Sahayak** solves this via **LangGraph Corrective Retrieval-Augmented Generation (CRAG)** backed by strict code-enforced legal guardrails.
+   - **Charaka IP** solves this via **LangGraph Corrective Retrieval-Augmented Generation (CRAG)** backed by strict code-enforced legal guardrails.
 
 ---
 

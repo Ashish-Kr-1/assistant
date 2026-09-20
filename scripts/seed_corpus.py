@@ -1,5 +1,5 @@
 """
-Corpus Seeding Script for IP-SAKTI Sahayak (SIH PS045)
+Corpus Seeding Script for Charaka IP (SIH PS045)
 Populates Qdrant with authoritative statutory sections, rules, treaties, and illustrative TKDL records.
 Enforces rules R7 (provenance labeling) and R10 (version stamping).
 Uses RealLegalScraper backed by disk cache (Indian Kanoon, WTO TRIPS, CBD Nagoya, WIPO GRATK).

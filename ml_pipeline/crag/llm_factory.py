@@ -1,5 +1,5 @@
 """
-Pluggable LLM Factory for CRAG (IP-SAKTI Sahayak PS045).
+Pluggable LLM Factory for CRAG (Charaka IP PS045).
 Allows seamless switching between Cohere (Prototype), OpenAI (Production),
 and Google Gemini without modifying pipeline logic.
 """

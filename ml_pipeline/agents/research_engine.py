@@ -1,5 +1,5 @@
 """
-Phase 4 — Research Engine & Report Generator (IP-SAKTI Sahayak PS045)
+Phase 4 — Research Engine & Report Generator (Charaka IP PS045)
 
 Turns a completed Phase 3 CaseAssessment into a structured, evidence-backed,
 source-cited preliminary report by executing the assessment's

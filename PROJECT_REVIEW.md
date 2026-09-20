@@ -1,4 +1,4 @@
-# IP-SAKTI Sahayak — Comprehensive Project Review & Implementation Report
+# Charaka IP — Comprehensive Project Review & Implementation Report
 ### SIH PS045: Multilingual, RAG-based AI Assistant for Ayurveda Intellectual Property & Regulatory Guidance
 
 ---
@@ -33,8 +33,8 @@ Standard generative AI tools (generic LLMs) represent a catastrophic liability i
 - They confuse classical drug licensing with FSSAI nutraceutical approval.
 - They fail to warn applicants of mandatory NBA Section 6 approvals, leading to criminal penalties and statutory patent revocations under Section 64.
 
-### 1.3 The Solution: IP-SAKTI Sahayak
-**IP-SAKTI Sahayak** is an authoritative, zero-hallucination, multilingual, Corrective Retrieval-Augmented Generation (CRAG) AI assistant engineered to resolve these challenges. It guarantees:
+### 1.3 The Solution: Charaka IP
+**Charaka IP** is an authoritative, zero-hallucination, multilingual, Corrective Retrieval-Augmented Generation (CRAG) AI assistant engineered to resolve these challenges. It guarantees:
 - **100% Real Statutory Ingestion**: Zero synthetic law, zero hand-typed fallback text, zero `text_override`. All legal chunks are dynamically scraped from Indian Kanoon, WTO, CBD, WIPO, and official gazette compendiums.
 - **Code-Enforced Legal Guardrails (Rules R1–R10)**: Non-negotiable programmatic constraints that enforce safe abstention, zero uncited claims, sentence entailment verification, jurisdiction separation, paid-source consent, provenance tracking, and classification gating.
 - **Canonical Single Source of Truth**: Centralized formulation taxonomy and compendium of 71 authoritative Ayurvedic texts.

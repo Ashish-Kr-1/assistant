@@ -1,5 +1,5 @@
 """
-Phase 4 — Research Engine & Report Generator (IP-SAKTI Sahayak PS045)
+Phase 4 — Research Engine & Report Generator (Charaka IP PS045)
 
 Defines the CaseReport schema produced by the ResearchEngine: it executes the
 Phase 3 ResearchPlan's `recommended_crag_queries` through the existing CRAG

@@ -1,5 +1,5 @@
 """
-Rule R6 Consent Guard for IP-SAKTI Sahayak (SIH PS045 CRAG.md §2 R6)
+Rule R6 Consent Guard for Charaka IP (SIH PS045 CRAG.md §2 R6)
 
 Enforces: "Paid-source access requires explicit, logged, per-query consent."
   - (a) Ask the user for explicit permission for this specific query.

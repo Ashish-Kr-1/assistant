@@ -23,10 +23,9 @@ export default function ChatTopbar({
       </button>
       {!sidebarOpen && (
         <div className={styles.topbarBrand}>
-          <div className={styles.sidebarBrandMark}>IS</div>
+          <div className={styles.sidebarBrandMark}>CI</div>
           <div className={styles.sidebarBrandText}>
-            IP-SAKTI
-            <span>Sahayak</span>
+            Charaka IP
           </div>
         </div>
       )}

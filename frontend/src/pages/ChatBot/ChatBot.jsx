@@ -23,7 +23,7 @@ const initialMessages = [
   {
     id: "m1",
     role: "assistant",
-    text: "Namaste. I'm IP-SAKTI Sahayak — ask me about IP protection, ABS duties, or regulatory classification for an Ayurvedic formulation. I'll always cite the underlying statute or treaty.",
+    text: "Namaste. I'm Charaka IP — ask me about IP protection, ABS duties, or regulatory classification for an Ayurvedic formulation. I'll always cite the underlying statute or treaty.",
   },
   {
     id: "m2",
@@ -48,7 +48,7 @@ const initialMessages = [
 ]
 
 const GENERIC_ERROR_REPLY =
-  "I couldn't reach the IP-SAKTI Sahayak backend just now. Make sure the FastAPI server is running on port 8000, then try again."
+  "I couldn't reach the Charaka IP backend just now. Make sure the FastAPI server is running on port 8000, then try again."
 
 function confidenceLabel(level) {
   switch ((level || "").toUpperCase()) {

@@ -25,10 +25,9 @@ export default function Sidebar({
       }}
     >
       <div className={styles.sidebarBrand}>
-        <div className={styles.sidebarBrandMark}>IS</div>
+        <div className={styles.sidebarBrandMark}>CI</div>
         <div className={styles.sidebarBrandText}>
-          IP-SAKTI
-          <span>Sahayak</span>
+          Charaka IP
         </div>
       </div>
 

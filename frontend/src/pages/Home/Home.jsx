@@ -14,12 +14,11 @@ export default function Home() {
       <main className={styles.hero}>
         <div className={styles.logoWrap}>
           <span className={styles.logoRing} />
-          <span className={styles.logoMark}>IS</span>
+          <span className={styles.logoMark}>CI</span>
         </div>
 
         <h1 className={styles.brandName}>
-          IP-SAKTI
-          <span className={styles.brandNameSub}>Sahayak</span>
+          Charaka IP
         </h1>
 
         <p className={styles.tagline}>Ancient wisdom, rigorously defended.</p>

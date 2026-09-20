@@ -21,6 +21,7 @@ from ml_pipeline.agents.web_research_agent import (
     translate_answer,
     web_search_available,
 )
+from app.services.cache_service import QueryCacheService
 
 logger = logging.getLogger("query_api")
 router = APIRouter()
@@ -161,6 +162,16 @@ async def query_assistant(request: QueryRequest, db: Session = Depends(get_db)):
             case_id=None,
             execution_logs=logs,
         )
+
+    # ── Redis Query Cache Lookup for repeated queries ─────────────────────────
+    target_lang = request.language or "en"
+    cached_data, cache_src = QueryCacheService.get(query_text, jurisdiction=jurisdiction, language=target_lang)
+    if cached_data is not None:
+        cache_log = _make_log("cache_service", "INFO", f"CACHE HIT ({cache_src.upper()}) for '{query_text[:45]}' [served in < 5ms]")
+        logs.append(cache_log)
+        cached_data["execution_logs"] = logs
+        cached_data["query"] = request.query
+        return QueryResponse(**cached_data)
 
     # Real multilingual detection (web_research_agent port of Charak IP's language step).
     # Falls back to a Devanagari-regex heuristic when no LLM key is configured — never blocks
@@ -355,7 +366,7 @@ async def query_assistant(request: QueryRequest, db: Session = Depends(get_db)):
 
     logs.append(_make_log("query_api", "INFO", f"Dispatching QueryResponse with {len(api_citations)} citation(s) [HTTP 200 OK]"))
 
-    return QueryResponse(
+    response = QueryResponse(
         query=request.query,
         jurisdiction=jurisdiction,
         answer=final_answer,
@@ -378,3 +389,16 @@ async def query_assistant(request: QueryRequest, db: Session = Depends(get_db)):
         case_id=None,
         execution_logs=logs,
     )
+
+    # Cache successful, non-abstained responses in Redis
+    if not response.is_abstained and response.answer:
+        cache_payload = response.model_dump()
+        cache_payload.pop("execution_logs", None)
+        QueryCacheService.set(
+            query=query_text,
+            jurisdiction=jurisdiction,
+            response_data=cache_payload,
+            language=target_lang,
+        )
+
+    return response

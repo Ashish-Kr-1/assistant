@@ -237,6 +237,7 @@ export default function MessageBubble({
   isLast,
   isTyping,
   onFollowUpClick,
+  onRetry,
 }) {
   // Streaming typewriter for assistant messages
   const displayed = useTypewriter(
@@ -269,6 +270,38 @@ export default function MessageBubble({
   // Intake question card (deep research mode)
   if (message.isIntake) {
     return <IntakeCard message={message} />
+  }
+
+  // Error card
+  if (message.isError) {
+    return (
+      <div className={styles.assistantRow}>
+        <div className={styles.assistantMain}>
+          <span className={styles.assistantAvatar}>
+            <Logo withText={false} size="sm" />
+          </span>
+          <div className={`${styles.assistantCard} ${styles.errorCard}`}>
+            <div className={styles.errorHeader}>
+              <Icon name="info" size={15} />
+              <span>Query Execution Issue</span>
+            </div>
+            <div className={styles.answerText}>
+              {renderMarkdown(message.text)}
+            </div>
+            {message.failedQuery && onRetry && (
+              <button
+                type="button"
+                className={styles.retryBtn}
+                onClick={() => onRetry(message.failedQuery)}
+              >
+                <Icon name="sparkle" size={13} />
+                Retry Query
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    )
   }
 
   // Standard assistant answer

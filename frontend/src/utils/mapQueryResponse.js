@@ -1,6 +1,6 @@
 // Maps a live /query backend response (see backend/app/schemas/query_schema.py)
 // into the message-shape that MessageBubble + Assistant.jsx expect.
-// Real API answers and the demo.js fallback answers render identically through this mapper.
+// All statutory citations, confidence metrics, and evidence cards render through this mapper.
 
 // ── Citation → Evidence card mapping ─────────────────────────────────────────
 function evidenceIcon(citation) {

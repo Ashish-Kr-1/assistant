@@ -6,13 +6,12 @@ import SideNav from "../../components/SideNav/SideNav"
 import FeatureStrip from "../../components/FeatureStrip/FeatureStrip"
 import ContextBar from "../../components/Assistant/ContextBar"
 import SearchComposer from "../../components/Assistant/SearchComposer"
-import SuggestedQuestions from "../../components/Assistant/SuggestedQuestions"
 import Stepper from "../../components/Assistant/Stepper"
 import ChatThread from "../../components/Assistant/ChatThread"
 import RightPanel from "../../components/Assistant/RightPanel"
-import SectionPlaceholder from "../../components/Assistant/SectionPlaceholder"
 import EscalateModal from "../../components/Assistant/EscalateModal"
 import KnowledgeGraph from "../../components/Assistant/KnowledgeGraph"
+import IPGuidance from "../../components/Assistant/IPGuidance"
 import Icon from "../../components/Icons/IconSet"
 import api from "../../api/axiosInstance"
 import {
@@ -21,11 +20,7 @@ import {
   mapDeepResearchResponse,
   mapCaseStatusToStep,
 } from "../../utils/mapQueryResponse"
-import {
-  initialConversation,
-  recentQueryConversations,
-  getDemoAnswer,
-} from "../../demo"
+import { quickActions } from "../../demo"
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function nowLabel() {
@@ -41,6 +36,12 @@ function makeId(prefix = "msg") {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2, 7)}`
 }
 
+function generateUUID() {
+  return typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `conv-${Date.now()}-${Math.random().toString(16).slice(2)}`
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function Assistant({ initialSection }) {
   const [searchParams]                  = useSearchParams()
@@ -50,16 +51,16 @@ export default function Assistant({ initialSection }) {
   useEffect(() => {
     if (initialSection) setSection(initialSection)
   }, [initialSection])
+
   const [jurisdiction, setJurisdiction] = useState("india")
   const [category, setCategory]         = useState("ayurvedic-formulation")
   const [language, setLanguage]         = useState("en")
-  const [mode, setMode]                 = useState("query")          // "query" | "deep_research"
+  const [mode, setMode]                 = useState("query") // "query" | "deep_research"
   const [heroDraft, setHeroDraft]       = useState("")
   const [followUpDraft, setFollowUpDraft] = useState("")
-  const [messages, setMessages]         = useState(initialConversation)
+  const [messages, setMessages]         = useState([]) // Clean initial state
   const [isTyping, setIsTyping]         = useState(false)
-  const [usingDemoData, setUsingDemoData] = useState(false)
-  const [activeRecentId, setActiveRecentId] = useState("rq-1")
+  const [activeRecentId, setActiveRecentId] = useState(null)
   const [showEscalateModal, setShowEscalateModal] = useState(false)
 
   // Deep Research case tracking
@@ -67,13 +68,9 @@ export default function Assistant({ initialSection }) {
   const [caseStatus, setCaseStatus]     = useState(null)
   const [stepperStep, setStepperStep]   = useState(-1)
 
-  const threadEndRef   = useRef(null)
-  const isMountedRef   = useRef(true)
-  const conversationIdRef = useRef(
-    typeof crypto !== "undefined" && crypto.randomUUID
-      ? crypto.randomUUID()
-      : `conv-${Date.now()}-${Math.random().toString(16).slice(2)}`
-  )
+  const threadEndRef      = useRef(null)
+  const isMountedRef      = useRef(true)
+  const conversationIdRef = useRef(generateUUID())
 
   useEffect(() => {
     isMountedRef.current = true
@@ -81,10 +78,12 @@ export default function Assistant({ initialSection }) {
   }, [])
 
   useEffect(() => {
-    threadEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" })
+    if (messages.length > 0) {
+      threadEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" })
+    }
   }, [messages, isTyping])
 
-  // ── Mode switch: clear case context when going back to Query ──────────────
+  // ── Mode switch ───────────────────────────────────────────────────────────
   function handleModeChange(next) {
     setMode(next)
     if (next === "query") {
@@ -100,6 +99,19 @@ export default function Assistant({ initialSection }) {
     setSection(next)
   }
 
+  // ── New Chat ──────────────────────────────────────────────────────────────
+  function handleNewChat() {
+    setMessages([])
+    setCaseId(null)
+    setCaseStatus(null)
+    setStepperStep(-1)
+    setHeroDraft("")
+    setFollowUpDraft("")
+    setActiveRecentId(null)
+    conversationIdRef.current = generateUUID()
+    setSection("assistant")
+  }
+
   // ── Main send handler ─────────────────────────────────────────────────────
   const handleSend = useCallback(
     async (overrideText) => {
@@ -111,7 +123,7 @@ export default function Assistant({ initialSection }) {
       setHeroDraft("")
       setFollowUpDraft("")
 
-      // Append the user message
+      // Append user message
       setMessages((prev) => [
         ...prev,
         { id: makeId("u"), role: "user", text, timeLabel: nowLabel() },
@@ -127,18 +139,15 @@ export default function Assistant({ initialSection }) {
           conversation_id: conversationIdRef.current,
           mode,
           formulation_category: category,
-          // Pass case_id for continuing deep research dialog
           ...(caseId ? { case_id: caseId } : {}),
         }
 
         const { data } = await api.post("/query", payload)
 
         if (!isMountedRef.current) return
-        setUsingDemoData(false)
 
         // ── Deep Research branch ──────────────────────────────────────────
         if (mode === "deep_research") {
-          // Update case tracking state
           if (data.case_id)     setCaseId(data.case_id)
           if (data.case_status) {
             setCaseStatus(data.case_status)
@@ -150,47 +159,56 @@ export default function Assistant({ initialSection }) {
           return
         }
 
-        // ── Query branch ─────────────────────────────────────────────────
-        setMessages((prev) => [
-          ...prev,
-          {
-            id:               makeId("a"),
-            role:             "assistant",
-            isStreaming:      true,             // triggers typewriter in MessageBubble
-            jurisdictionBadge: jurisdiction === "india" ? "INDIA" : "INTERNATIONAL",
-            confidence:       mapConfidence(data.confidence_level),
-            text:             data.answer || "I couldn't generate a confident answer for that just now.",
-            evidence:         mapCitationsToEvidence(data.citations),
-            relatedInsight:
-              data.related_insight ||
-              "You may also want to check if this is covered under TKDL or has been disclosed in prior art.",
-            followUps:
-              data.follow_up_questions?.slice(0, 3) || [
-                "Can this be trademarked?",
-                "What regulations apply here?",
-                "Are there ABS obligations for export?",
-              ],
-          },
-        ])
-      } catch (_err) {
-        // ── Graceful demo fallback ──────────────────────────────────────
-        await new Promise((r) => setTimeout(r, 600))
-        if (!isMountedRef.current) return
-        setUsingDemoData(true)
+        // ── Standard Query branch ─────────────────────────────────────────
+        const answerText = data.answer || "No assessment was generated for this query."
+        const confidenceLevel = mapConfidence(data.confidence_level)
 
-        const demo = getDemoAnswer(text)
         setMessages((prev) => [
           ...prev,
           {
             id:               makeId("a"),
             role:             "assistant",
             isStreaming:      true,
-            jurisdictionBadge: jurisdiction === "india" ? "INDIA" : demo.jurisdictionBadge,
-            confidence:       demo.confidence,
-            text:             demo.text,
-            evidence:         demo.evidence,
-            relatedInsight:   demo.relatedInsight,
-            followUps:        demo.followUps,
+            jurisdictionBadge: jurisdiction === "india" ? "INDIA" : "INTERNATIONAL",
+            confidence:       confidenceLevel,
+            text:             answerText,
+            evidence:         mapCitationsToEvidence(data.citations),
+            relatedInsight:   data.related_insight,
+            followUps:        data.follow_up_questions?.slice(0, 3) || [],
+          },
+        ])
+
+        // Persist to local search history
+        try {
+          const raw = localStorage.getItem("ipsakti_recent_queries")
+          const list = raw ? JSON.parse(raw) : []
+          const entry = {
+            id: `q-${Date.now()}`,
+            question: text,
+            timeLabel: nowLabel(),
+            jurisdiction: jurisdiction === "india" ? "India" : "International",
+            confidence: confidenceLevel,
+          }
+          const updated = [entry, ...list.filter((x) => x.question !== text).slice(0, 9)]
+          localStorage.setItem("ipsakti_recent_queries", JSON.stringify(updated))
+          window.dispatchEvent(new Event("ipsakti_history_updated"))
+        } catch (_) {}
+      } catch (err) {
+        if (!isMountedRef.current) return
+        const errMsg =
+          err?.response?.data?.detail ||
+          err?.message ||
+          "Unable to complete query. Please check your connection to the analysis engine."
+
+        setMessages((prev) => [
+          ...prev,
+          {
+            id:          makeId("err"),
+            role:        "assistant",
+            isError:     true,
+            failedQuery: text,
+            text:        `Unable to process analysis: ${errMsg}`,
+            timeLabel:   nowLabel(),
           },
         ])
       } finally {
@@ -203,12 +221,6 @@ export default function Assistant({ initialSection }) {
     ]
   )
 
-  function handleSelectRecentQuery(id) {
-    setSection("assistant")
-    setActiveRecentId(id)
-    setMessages(recentQueryConversations[id] || initialConversation)
-  }
-
   function handleResetContext() {
     setJurisdiction("india")
     setCategory("ayurvedic-formulation")
@@ -219,16 +231,23 @@ export default function Assistant({ initialSection }) {
     setStepperStep(-1)
   }
 
+  const isWide = section === "knowledge-base" || section === "ip-guidance"
+
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className={`${styles.page} ${section === "knowledge-base" ? styles.widePage : ""}`}>
+    <div className={`${styles.page} ${isWide ? styles.widePage : ""}`}>
       <TopNav
         section={section}
         onSectionChange={handleSectionChange}
         language={language}
         onLanguageChange={setLanguage}
+        onNewChat={handleNewChat}
       />
-      <SideNav section={section} onSectionChange={setSection} />
+      <SideNav
+        section={section}
+        onSectionChange={setSection}
+        onEscalate={() => setShowEscalateModal(true)}
+      />
 
       <main className={styles.main}>
         {section === "assistant" ? (
@@ -274,81 +293,109 @@ export default function Assistant({ initialSection }) {
               onResetContext={handleResetContext}
               mode={mode}
               onModeChange={handleModeChange}
-            />
-
-            {/* Hero search */}
-            <SearchComposer
-              variant="hero"
-              value={heroDraft}
-              onChange={setHeroDraft}
-              onSend={() => handleSend()}
-              isTyping={isTyping}
-              placeholder={
-                mode === "deep_research"
-                  ? "Describe your Ayurvedic innovation or formulation…"
-                  : "Describe your IP or regulatory question…"
-              }
-              language={language}
-            />
-
-            <SuggestedQuestions onSelect={(q) => handleSend(q)} />
-
-            {/* Stepper: shows query steps or live case progress */}
-            <Stepper
-              mode={mode}
-              activeStep={stepperStep}
               caseId={caseId}
             />
 
-            {/* Demo banner */}
-            {usingDemoData && (
-              <div className={styles.demoBanner}>
-                <Icon name="info" size={13} />
-                Backend unreachable — showing a demo answer so you can keep testing the flow.
+            {/* Stepper */}
+            <Stepper mode={mode} activeStep={stepperStep} caseId={caseId} />
+
+            {/* Thread or Welcome Starter */}
+            {messages.length === 0 ? (
+              <div className={styles.welcomeState}>
+                <div className={styles.welcomeHeader}>
+                  <span className={styles.welcomeEyebrow}>India's Traditional-Knowledge IP Companion</span>
+                  <h2 className={styles.welcomeTitle}>How can Charaka assist your innovation today?</h2>
+                  <p className={styles.welcomeDesc}>
+                    Every answer is cited against the Patents Act 1970, Biological Diversity Act 2002,
+                    Drugs &amp; Cosmetics Act 1940, and the Traditional Knowledge Digital Library (TKDL).
+                  </p>
+                </div>
+
+                <div className={styles.starterGrid}>
+                  {quickActions.map((qa) => (
+                    <button
+                      key={qa.key}
+                      type="button"
+                      className={styles.starterCard}
+                      onClick={() => handleSend(qa.query)}
+                    >
+                      <span className={styles.starterIcon}>
+                        <Icon name={qa.icon} size={18} />
+                      </span>
+                      <div className={styles.starterText}>
+                        <span className={styles.starterTitle}>{qa.title}</span>
+                        <span className={styles.starterSubtitle}>{qa.subtitle}</span>
+                      </div>
+                      <Icon name="arrow-right" size={13} className={styles.starterArrow} />
+                    </button>
+                  ))}
+                </div>
+
+                {/* Hero composer */}
+                <SearchComposer
+                  variant="hero"
+                  value={heroDraft}
+                  onChange={setHeroDraft}
+                  onSend={() => handleSend()}
+                  isTyping={isTyping}
+                  placeholder={
+                    mode === "deep_research"
+                      ? "Describe your innovation to start deep intake (e.g. herbal extract for arthritis)…"
+                      : "Ask any question about patentability, TKDL prior art, or regulatory compliance…"
+                  }
+                  language={language}
+                  onLanguageChange={setLanguage}
+                />
               </div>
+            ) : (
+              <>
+                <ChatThread
+                  messages={messages}
+                  isTyping={isTyping}
+                  onFollowUpClick={(q) => handleSend(q)}
+                  onRetry={(q) => handleSend(q)}
+                  scrollRef={threadEndRef}
+                />
+
+                <div className={styles.disclaimer}>
+                  Educational &amp; guidance purposes only — does not constitute formal legal advice.
+                </div>
+
+                {/* Follow-up composer */}
+                <SearchComposer
+                  variant="followup"
+                  value={followUpDraft}
+                  onChange={setFollowUpDraft}
+                  onSend={() => handleSend()}
+                  isTyping={isTyping}
+                  placeholder={
+                    mode === "deep_research" && caseId
+                      ? "Reply to continue your case intake…"
+                      : "Ask a follow-up question…"
+                  }
+                  language={language}
+                  onLanguageChange={setLanguage}
+                />
+              </>
             )}
-
-            {/* Chat thread */}
-            <ChatThread
-              messages={messages}
-              isTyping={isTyping}
-              onFollowUpClick={(q) => handleSend(q)}
-              scrollRef={threadEndRef}
-            />
-
-            <div className={styles.disclaimer}>
-              Educational &amp; guidance purposes only — does not constitute formal legal advice.
-            </div>
-
-            {/* Follow-up composer */}
-            <SearchComposer
-              variant="followup"
-              value={followUpDraft}
-              onChange={setFollowUpDraft}
-              onSend={() => handleSend()}
-              isTyping={isTyping}
-              placeholder={
-                mode === "deep_research" && caseId
-                  ? "Reply to continue your case intake…"
-                  : "Ask a follow-up question…"
-              }
-              language={language}
-              onLanguageChange={setLanguage}
-            />
           </>
         ) : section === "knowledge-base" ? (
           <KnowledgeGraph onOpenAssistant={() => setSection("assistant")} />
-        ) : (
-          <SectionPlaceholder section={section} onOpenAssistant={() => setSection("assistant")} />
-        )}
+        ) : section === "ip-guidance" ? (
+          <IPGuidance
+            onAskAssistant={(q) => {
+              setSection("assistant")
+              handleSend(q)
+            }}
+          />
+        ) : null}
       </main>
 
-      {section !== "knowledge-base" && (
+      {!isWide && (
         <RightPanel
           onQuickAction={(q) => handleSend(q)}
-          onSelectRecentQuery={handleSelectRecentQuery}
+          onSelectRecentQuery={(rq) => handleSend(rq.question)}
           activeRecentId={activeRecentId}
-          onViewAllRecent={() => setSection("query-history")}
           onEscalate={() => setShowEscalateModal(true)}
           conversationId={conversationIdRef.current}
         />
@@ -357,7 +404,10 @@ export default function Assistant({ initialSection }) {
       <FeatureStrip />
 
       {showEscalateModal && (
-        <EscalateModal onClose={() => setShowEscalateModal(false)} />
+        <EscalateModal
+          onClose={() => setShowEscalateModal(false)}
+          defaultCategory={category}
+        />
       )}
     </div>
   )

@@ -108,11 +108,6 @@ export default function SearchComposer({
           onKeyDown={handleKeyDown}
           placeholder={isListening ? "Listening…" : placeholder}
         />
-        {variant === "followup" && (
-          <button type="button" className={styles.ghostIconBtn} aria-label="Attach a file">
-            <Icon name="paperclip" size={17} />
-          </button>
-        )}
         <button
           type="button"
           className={`${styles.ghostIconBtn} ${isListening ? styles.listening : ""}`}

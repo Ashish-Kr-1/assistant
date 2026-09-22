@@ -10,6 +10,7 @@ export default function App() {
         <Route path="/assistant" element={<Assistant />}></Route>
         <Route path="/chatbot" element={<Assistant />}></Route>
         <Route path="/knowledge-graph" element={<Assistant initialSection="knowledge-base" />}></Route>
+        <Route path="/ip-guidance" element={<Assistant initialSection="ip-guidance" />}></Route>
       </Routes>
     </BrowserRouter>
   )

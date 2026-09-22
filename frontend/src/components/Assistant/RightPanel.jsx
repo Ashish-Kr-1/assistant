@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import styles from "./RightPanel.module.css"
 import Icon from "../Icons/IconSet"
-import { quickActions, recentQueries } from "../../demo"
+import { quickActions } from "../../demo"
 import api from "../../api/axiosInstance"
 
 const CONFIDENCE_DOT = {
@@ -17,16 +17,33 @@ function confidenceFromScore(score) {
   return "Low"
 }
 
+function loadLocalHistory() {
+  try {
+    const raw = localStorage.getItem("ipsakti_recent_queries")
+    return raw ? JSON.parse(raw) : []
+  } catch (_) {
+    return []
+  }
+}
+
 export default function RightPanel({
   onQuickAction,
   onSelectRecentQuery,
   activeRecentId,
-  onViewAllRecent,
   onEscalate,
   conversationId,
 }) {
-  const [recentHistory, setRecentHistory] = useState(recentQueries) // start with demo
+  const [recentHistory, setRecentHistory] = useState(loadLocalHistory)
   const [loadingHistory, setLoadingHistory] = useState(false)
+
+  // Listen to storage events to keep recent queries in sync across turns
+  useEffect(() => {
+    function handleStorageChange() {
+      setRecentHistory(loadLocalHistory())
+    }
+    window.addEventListener("ipsakti_history_updated", handleStorageChange)
+    return () => window.removeEventListener("ipsakti_history_updated", handleStorageChange)
+  }, [])
 
   // Attempt to fetch real active case from backend on mount
   useEffect(() => {
@@ -36,8 +53,7 @@ export default function RightPanel({
       .get(`/cases/active?conversation_id=${conversationId}&user_id=anonymous_user`)
       .then((res) => {
         const c = res.data
-        if (!c) return
-        // Build a synthetic recent-query entry from the active case
+        if (!c || !c.case_id) return
         const syntheticEntry = {
           id: c.case_id,
           question: c.title || c.profile?.innovation_name || "Deep Research Case",
@@ -47,14 +63,23 @@ export default function RightPanel({
           }),
           jurisdiction: "India",
           confidence: confidenceFromScore(c.assessment?.confidence_score),
+          isCase: true,
         }
-        setRecentHistory((prev) => [syntheticEntry, ...prev.slice(0, 4)])
+        setRecentHistory((prev) => {
+          const filtered = prev.filter((p) => p.id !== c.case_id)
+          return [syntheticEntry, ...filtered.slice(0, 5)]
+        })
       })
-      .catch(() => {
-        // Backend not available — demo data stays
-      })
+      .catch(() => {})
       .finally(() => setLoadingHistory(false))
   }, [conversationId])
+
+  function handleClearHistory() {
+    try {
+      localStorage.removeItem("ipsakti_recent_queries")
+    } catch (_) {}
+    setRecentHistory([])
+  }
 
   return (
     <aside className={styles.panel}>
@@ -63,7 +88,7 @@ export default function RightPanel({
         <div className={styles.sectionHeader}>
           <span className={`${styles.sectionHeaderLeft} ${styles.boltHeader}`}>
             <Icon name="bolt" size={14} />
-            Quick Actions
+            Quick Assessment
           </span>
         </div>
         <div className={styles.actionList}>
@@ -95,32 +120,43 @@ export default function RightPanel({
             Recent Queries
             {loadingHistory && <span className={styles.loadingDot} />}
           </span>
-          <button type="button" className={styles.viewAll} onClick={onViewAllRecent}>
-            View all
-            <Icon name="arrow-right" size={12} />
-          </button>
-        </div>
-        <div className={styles.recentList}>
-          {recentHistory.map((rq) => (
-            <button
-              key={rq.id}
-              type="button"
-              className={`${styles.recentItem} ${activeRecentId === rq.id ? styles.recentItemActive : ""}`}
-              onClick={() => onSelectRecentQuery(rq.id)}
-            >
-              <span className={`${styles.recentDot} ${styles[CONFIDENCE_DOT[rq.confidence] || "muted"]}`} />
-              <span className={styles.recentText}>
-                <span className={styles.recentQuestion}>{rq.question}</span>
-                <span className={styles.recentMeta}>
-                  {rq.timeLabel} &middot; {rq.jurisdiction}
-                </span>
-              </span>
-              <span className={`${styles.confidenceBadge} ${styles[CONFIDENCE_DOT[rq.confidence] || "muted"]}`}>
-                {rq.confidence}
-              </span>
+          {recentHistory.length > 0 && (
+            <button type="button" className={styles.clearBtn} onClick={handleClearHistory} title="Clear history">
+              Clear
             </button>
-          ))}
+          )}
         </div>
+
+        {recentHistory.length === 0 ? (
+          <div className={styles.emptyHistory}>
+            <Icon name="clock" size={18} className={styles.emptyHistoryIcon} />
+            <span>No recent queries yet. Your search history will appear here.</span>
+          </div>
+        ) : (
+          <div className={styles.recentList}>
+            {recentHistory.map((rq) => (
+              <button
+                key={rq.id}
+                type="button"
+                className={`${styles.recentItem} ${activeRecentId === rq.id ? styles.recentItemActive : ""}`}
+                onClick={() => (onSelectRecentQuery ? onSelectRecentQuery(rq) : onQuickAction(rq.question))}
+              >
+                <span className={`${styles.recentDot} ${styles[CONFIDENCE_DOT[rq.confidence] || "muted"]}`} />
+                <span className={styles.recentText}>
+                  <span className={styles.recentQuestion}>{rq.question}</span>
+                  <span className={styles.recentMeta}>
+                    {rq.timeLabel} {rq.jurisdiction ? `· ${rq.jurisdiction}` : ""}
+                  </span>
+                </span>
+                {rq.confidence && (
+                  <span className={`${styles.confidenceBadge} ${styles[CONFIDENCE_DOT[rq.confidence] || "muted"]}`}>
+                    {rq.confidence}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Expert Escalation */}
@@ -129,7 +165,7 @@ export default function RightPanel({
           <Icon name="user" size={18} />
         </span>
         <h4>Need Expert Guidance?</h4>
-        <p>When your case requires professional interpretation, escalate directly to a certified IP professional.</p>
+        <p>When your case requires professional legal advice, escalate directly to a registered AYUSH patent agent.</p>
         <button type="button" className={styles.expertBtn} onClick={onEscalate}>
           Escalate to an Expert
           <Icon name="arrow-right" size={13} />

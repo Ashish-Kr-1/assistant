@@ -75,6 +75,44 @@
   box-shadow: var(--shadow-sm);
 }
 
+.errorCard {
+  border-color: #fca5a5;
+  background: #fff5f5;
+}
+
+.errorHeader {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #dc2626;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.retryBtn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: #dc2626;
+  color: #fff;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-top: 4px;
+}
+
+.retryBtn:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+}
+
 /* ── Card header ──────────────────────────────────────────────────────────── */
 .cardHeader {
   display: flex;

@@ -2,7 +2,7 @@ import styles from "./ChatThread.module.css"
 import MessageBubble from "./MessageBubble"
 import Logo from "../Logo/Logo"
 
-export default function ChatThread({ messages, isTyping, onFollowUpClick, scrollRef }) {
+export default function ChatThread({ messages, isTyping, onFollowUpClick, onRetry, scrollRef }) {
   if (!messages.length && !isTyping) return null
 
   return (
@@ -14,6 +14,7 @@ export default function ChatThread({ messages, isTyping, onFollowUpClick, scroll
           isLast={i === messages.length - 1}
           isTyping={isTyping}
           onFollowUpClick={onFollowUpClick}
+          onRetry={onRetry}
         />
       ))}
 

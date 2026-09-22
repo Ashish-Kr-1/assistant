@@ -160,6 +160,16 @@ const PATHS = {
       <line x1="4" y1="17" x2="20" y2="17" />
     </>
   ),
+  network: (
+    <>
+      <circle cx="6" cy="6" r="3" />
+      <circle cx="18" cy="6" r="3" />
+      <circle cx="12" cy="18" r="3" />
+      <line x1="8.5" y1="7.5" x2="15.5" y2="7.5" />
+      <line x1="7.5" y1="8.5" x2="10.5" y2="15.5" />
+      <line x1="16.5" y1="8.5" x2="13.5" y2="15.5" />
+    </>
+  ),
 }
 
 export default function Icon({ name, size = 18, strokeWidth = 2, className, ...rest }) {

@@ -1,3 +1,44 @@
+/* ── Mode toggle ──────────────────────────────────────────────────────────── */
+.modeToggle {
+  display: flex;
+  align-items: center;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 3px;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.modeBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+  white-space: nowrap;
+}
+
+.modeBtnActive {
+  background: var(--surface);
+  color: var(--teal);
+  box-shadow: 0 1px 4px rgba(14, 74, 82, 0.12);
+}
+
+.divider {
+  width: 1px;
+  height: 28px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
 .bar {
   display: flex;
   align-items: flex-end;

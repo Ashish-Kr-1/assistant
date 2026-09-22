@@ -1,9 +1,10 @@
+/* ── Query mode (static) ──────────────────────────────────────────────────── */
 .wrap {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  padding: 6px 0 2px;
+  padding: 4px 0;
 }
 
 .steps {
@@ -53,15 +54,134 @@
   color: var(--text-muted);
 }
 
+/* ── Deep Research case progress stepper ──────────────────────────────────── */
+.caseId {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.caseSteps {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  width: 100%;
+  max-width: 520px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.caseStep {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
+  opacity: 0.45;
+  transition: opacity 0.2s;
+}
+
+.caseStep.active,
+.caseStep.complete {
+  opacity: 1;
+}
+
+.caseStepLeft {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.caseCircle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--surface-alt);
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+
+.caseStep.active .caseCircle {
+  border-color: var(--teal);
+  background: var(--teal-tint);
+  color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(14, 74, 82, 0.12);
+  animation: stepPulse 2s ease-in-out infinite;
+}
+
+.caseStep.complete .caseCircle {
+  border-color: var(--green);
+  background: var(--green-light);
+  color: var(--green);
+}
+
+@keyframes stepPulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(14, 74, 82, 0.12); }
+  50%       { box-shadow: 0 0 0 6px rgba(14, 74, 82, 0.05); }
+}
+
+.caseLine {
+  width: 2px;
+  flex: 1;
+  min-height: 16px;
+  background: var(--border);
+  margin: 4px 0;
+  transition: background 0.2s;
+}
+
+.caseLineComplete {
+  background: var(--green);
+}
+
+.caseStepContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 4px;
+  flex: 1;
+}
+
+.caseStepLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.caseStep.active .caseStepLabel,
+.caseStep.complete .caseStepLabel {
+  color: var(--text-primary);
+}
+
+.caseStepDesc {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  animation: fadeSlideUp 0.25s ease both;
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
-  .steps {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  .label {
-    margin-right: 4px;
-  }
-  .line {
-    width: 16px;
-  }
+  .steps { flex-wrap: wrap; justify-content: center; }
+  .label { margin-right: 4px; }
+  .line  { width: 16px; }
+  .caseSteps { flex-direction: column; }
 }

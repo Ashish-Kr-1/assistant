@@ -9,6 +9,7 @@ export default function App() {
         <Route path="/" element={<Home />}></Route>
         <Route path="/assistant" element={<Assistant />}></Route>
         <Route path="/chatbot" element={<Assistant />}></Route>
+        <Route path="/knowledge-graph" element={<Assistant initialSection="knowledge-base" />}></Route>
       </Routes>
     </BrowserRouter>
   )

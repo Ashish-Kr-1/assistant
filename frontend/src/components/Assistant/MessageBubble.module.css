@@ -1,30 +1,32 @@
+/* ── User message ─────────────────────────────────────────────────────────── */
 .userRow {
   display: flex;
   align-items: flex-start;
   justify-content: flex-end;
   gap: 10px;
+  animation: fadeSlideUp 0.22s ease both;
 }
 
 .userBubble {
-  max-width: 70%;
-  background: var(--teal-tint);
-  border: 1px solid var(--teal-light);
-  border-radius: var(--radius-lg) var(--radius-lg) 4px var(--radius-lg);
-  padding: 12px 16px;
+  max-width: 68%;
+  background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
+  border-radius: 18px 18px 4px 18px;
+  padding: 13px 18px;
+  box-shadow: 0 3px 12px rgba(14, 74, 82, 0.22);
 }
 
 .userBubble p {
   margin: 0;
   font-size: 14.5px;
-  color: var(--text-primary);
-  line-height: 1.5;
+  color: #fff;
+  line-height: 1.55;
 }
 
 .timeLabel {
   display: block;
   margin-top: 5px;
   font-size: 11px;
-  color: var(--text-muted);
+  color: rgba(255,255,255,0.55);
   text-align: right;
 }
 
@@ -32,29 +34,32 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: var(--teal-light);
   color: var(--teal);
   flex-shrink: 0;
+  margin-top: 2px;
 }
 
+/* ── Assistant message ────────────────────────────────────────────────────── */
 .assistantRow {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  animation: fadeSlideUp 0.25s ease both;
 }
 
 .assistantMain {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: 12px;
 }
 
 .assistantAvatar {
   flex-shrink: 0;
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
 .assistantCard {
@@ -62,37 +67,41 @@
   min-width: 0;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: 4px 18px 18px 18px;
   padding: 18px 20px;
   display: flex;
   flex-direction: column;
   gap: 14px;
+  box-shadow: var(--shadow-sm);
 }
 
+/* ── Card header ──────────────────────────────────────────────────────────── */
 .cardHeader {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .jurisdictionBadge {
   display: inline-flex;
   align-items: center;
-  padding: 4px 10px;
+  gap: 5px;
+  padding: 3px 10px;
   border-radius: var(--radius-pill);
   background: var(--orange-light);
   color: var(--orange-dark);
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 800;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .confidenceTag {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 700;
 }
 
@@ -101,46 +110,156 @@
   height: 7px;
   border-radius: 50%;
   background: currentColor;
+  flex-shrink: 0;
 }
 
-.confidenceTag.green {
-  color: var(--green);
-}
+.confidenceTag.green { color: var(--green); }
+.confidenceTag.orange { color: var(--orange-dark); }
+.confidenceTag.muted { color: var(--text-muted); }
 
-.confidenceTag.orange {
-  color: var(--orange-dark);
-}
-
-.confidenceTag.muted {
-  color: var(--text-muted);
+/* ── Answer body ──────────────────────────────────────────────────────────── */
+.answerBody {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
 }
 
 .answerText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Markdown elements */
+.mdH1 {
+  margin: 4px 0 2px;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.mdH2 {
+  margin: 4px 0 2px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.35;
+}
+
+.mdH3 {
+  margin: 4px 0 2px;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--teal-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.mdP {
   margin: 0;
   font-size: 14.5px;
-  line-height: 1.65;
   color: var(--text-primary);
+  line-height: 1.68;
 }
 
-.answerText strong {
-  font-weight: 700;
+.mdUl,
+.mdOl {
+  margin: 2px 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
+.mdLi {
+  font-size: 14.5px;
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+.mdHr {
+  border: none;
+  border-top: 1px solid var(--border-soft);
+  margin: 4px 0;
+}
+
+.mdBlockquote {
+  margin: 2px 0;
+  padding: 8px 14px;
+  border-left: 3px solid var(--teal);
+  background: var(--teal-tint);
+  border-radius: 0 8px 8px 0;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.mdCode {
+  font-family: "SF Mono", "Fira Code", monospace;
+  font-size: 12.5px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: var(--teal-dark);
+}
+
+/* Inline citation chip [1], [2] */
+.citationChip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: var(--teal-light);
+  color: var(--teal);
+  font-size: 10.5px;
+  font-weight: 800;
+  vertical-align: middle;
+  cursor: default;
+}
+
+/* Streaming cursor */
+.streamCursor {
+  display: inline-block;
+  color: var(--teal);
+  font-size: 16px;
+  line-height: 1;
+  margin-left: 2px;
+  animation: blink 0.85s step-end infinite;
+  flex-shrink: 0;
+  align-self: flex-end;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ── Evidence block ───────────────────────────────────────────────────────── */
 .evidenceBlock {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding-top: 4px;
+  padding-top: 14px;
   border-top: 1px solid var(--border-soft);
+  animation: fadeSlideUp 0.3s ease both;
 }
 
 .evidenceHeading {
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .evidenceHeading svg {
@@ -149,21 +268,22 @@
 
 .evidenceGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 8px;
 }
 
 .evidenceCard {
   display: flex;
   align-items: flex-start;
-  gap: 9px;
+  gap: 8px;
   background: var(--surface-alt);
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-md);
-  padding: 11px 12px;
+  padding: 10px 12px;
   text-decoration: none;
   color: inherit;
   cursor: default;
+  transition: border-color 0.15s, background 0.15s;
 }
 
 a.evidenceCard {
@@ -175,13 +295,27 @@ a.evidenceCard:hover {
   background: var(--teal-tint);
 }
 
+.evidenceIndex {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  background: var(--teal-light);
+  color: var(--teal);
+  font-size: 10.5px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
 .evidenceIcon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
   background: var(--teal-light);
   color: var(--teal);
   flex-shrink: 0;
@@ -192,16 +326,20 @@ a.evidenceCard:hover {
   flex-direction: column;
   gap: 2px;
   min-width: 0;
+  flex: 1;
 }
 
 .evidenceTitle {
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .evidenceSubtitle {
-  font-size: 11.5px;
+  font-size: 11px;
   color: var(--text-muted);
 }
 
@@ -209,15 +347,17 @@ a.evidenceCard:hover {
   margin-left: auto;
   color: var(--text-muted);
   flex-shrink: 0;
+  margin-top: 2px;
 }
 
+/* ── Confidence footer ────────────────────────────────────────────────────── */
 .confidenceRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
-  padding-top: 4px;
+  padding-top: 12px;
   border-top: 1px solid var(--border-soft);
 }
 
@@ -225,44 +365,40 @@ a.evidenceCard:hover {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--text-secondary);
-}
-
-.infoIcon {
+  font-size: 12px;
+  font-weight: 600;
   color: var(--text-muted);
 }
 
-.detailLink {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  background: none;
-  border: none;
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--teal);
-  cursor: pointer;
+.confidenceRowLabel svg {
+  color: var(--green);
 }
 
-.detailLink:hover {
-  text-decoration: underline;
+.sourceCount {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface-sunken);
+  border-radius: var(--radius-pill);
+  padding: 2px 9px;
 }
 
+/* ── Related insight ──────────────────────────────────────────────────────── */
 .insightCallout {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 11px;
   background: var(--orange-light);
+  border: 1px solid rgba(194, 115, 42, 0.18);
   border-radius: var(--radius-md);
-  padding: 13px 14px;
+  padding: 12px 14px;
+  animation: fadeSlideUp 0.3s ease both;
 }
 
 .insightIcon {
   color: var(--orange-dark);
   flex-shrink: 0;
-  margin-top: 1px;
+  margin-top: 2px;
 }
 
 .insightBody {
@@ -272,10 +408,12 @@ a.evidenceCard:hover {
 
 .insightTitle {
   display: block;
-  font-size: 12.5px;
+  font-size: 11.5px;
   font-weight: 800;
   color: var(--orange-dark);
   margin-bottom: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .insightBody p {
@@ -285,52 +423,190 @@ a.evidenceCard:hover {
   color: var(--text-secondary);
 }
 
-.insightBtn {
-  flex-shrink: 0;
+/* ── Typing indicator ─────────────────────────────────────────────────────── */
+.typingRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: fadeSlideUp 0.22s ease both;
+}
+
+.typingDots {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   background: var(--surface);
-  border: 1px solid var(--orange-dark);
-  color: var(--orange-dark);
+  border: 1px solid var(--border);
+  border-radius: 4px 18px 18px 18px;
+  padding: 14px 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.typingDots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--teal-light);
+  display: block;
+  animation: typingPulse 1.2s ease-in-out infinite;
+}
+
+.typingDots span:nth-child(1) { animation-delay: 0s; }
+.typingDots span:nth-child(2) { animation-delay: 0.2s; }
+.typingDots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingPulse {
+  0%, 80%, 100% { background: var(--teal-light); transform: scale(1); }
+  40% { background: var(--teal); transform: scale(1.3); }
+}
+
+/* ── Deep Research Intake card ────────────────────────────────────────────── */
+.intakeCard {
+  border-color: rgba(14, 74, 82, 0.25) !important;
+  background: linear-gradient(135deg, var(--teal-tint) 0%, var(--surface) 100%) !important;
+}
+
+.intakeHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.intakeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
   border-radius: var(--radius-pill);
-  padding: 7px 13px;
-  font-size: 12px;
+  background: var(--teal-light);
+  color: var(--teal);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.caseStatusPill {
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+  font-size: 10.5px;
   font-weight: 700;
-  cursor: pointer;
-  white-space: nowrap;
+  text-transform: capitalize;
 }
 
-.insightBtn:hover {
-  background: var(--orange-dark);
-  color: #fff;
+.intakeQuestion {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
 }
 
-.followUpRow {
+.intakeQuestionIcon {
+  color: var(--teal);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.intakeQuestion p {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.intakeMissing {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.intakeMissingLabel {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.intakeMissingChips {
   display: flex;
   flex-wrap: wrap;
+  gap: 6px;
+}
+
+.intakeMissingChip {
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+/* ── Follow-up chips ──────────────────────────────────────────────────────── */
+.followUpRow {
+  display: flex;
+  flex-direction: column;
   gap: 8px;
-  padding-left: 42px;
+  padding-left: 44px;
+  animation: fadeSlideUp 0.3s ease 0.1s both;
+}
+
+.followUpLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.followUpChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
 }
 
 .followUpChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-pill);
-  padding: 8px 14px;
+  padding: 7px 14px;
   font-size: 13px;
   font-weight: 600;
   color: var(--teal);
   cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.12s;
 }
 
 .followUpChip:hover {
   background: var(--teal-tint);
   border-color: var(--teal);
+  transform: translateY(-1px);
 }
 
+.followUpChip svg {
+  flex-shrink: 0;
+}
+
+/* ── Shared animation ─────────────────────────────────────────────────────── */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
-  .insightCallout {
-    flex-direction: column;
-  }
-  .followUpRow {
-    padding-left: 0;
-  }
+  .userBubble { max-width: 88%; }
+  .evidenceGrid { grid-template-columns: 1fr; }
+  .insightCallout { flex-direction: column; }
+  .followUpRow { padding-left: 0; }
 }

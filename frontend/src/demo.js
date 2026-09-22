@@ -47,6 +47,7 @@ export const composerLanguagePills = languages.slice(0, 6)
 export const topNavLinks = [
   { key: "home", label: "Home", to: "/" },
   { key: "assistant", label: "Ask IP-SAKTI", to: "/assistant" },
+  { key: "knowledge-base", label: "Knowledge Graph", section: "knowledge-base" },
   { key: "ip-guidance", label: "IP Guidance", section: "ip-guidance", dropdown: true },
   { key: "resources", label: "Resources", section: "resources", dropdown: true },
   { key: "about", label: "About", section: "about", dropdown: true },
@@ -54,8 +55,8 @@ export const topNavLinks = [
 
 export const sideNavItems = [
   { key: "assistant", label: "AI Assistant", icon: "chat" },
+  { key: "knowledge-base", label: "Knowledge Graph", icon: "network" },
   { key: "ip-guidance", label: "IP Guidance", icon: "document" },
-  { key: "knowledge-base", label: "Knowledge Base", icon: "book" },
   { key: "query-history", label: "Query History", icon: "clock" },
   { key: "expert-escalation", label: "Expert Escalation", icon: "user" },
   { key: "resources", label: "Resources", icon: "folder" },

@@ -50,6 +50,30 @@
   color: var(--text-secondary);
 }
 
+.deepResearchBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 13px;
+  border-radius: var(--radius-pill);
+  background: var(--teal-light);
+  border: 1px solid rgba(14, 74, 82, 0.2);
+  color: var(--teal);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-left: auto;
+  white-space: nowrap;
+  animation: fadeSlideUp 0.25s ease both;
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+
 .demoBanner {
   display: flex;
   align-items: center;
@@ -72,6 +96,36 @@
   font-size: 11.5px;
   color: var(--text-muted);
   padding: 4px 0;
+}
+
+.widePage {
+  grid-template-columns: 230px 1fr !important;
+  grid-template-areas:
+    "topnav topnav"
+    "side main"
+    "footer footer" !important;
+}
+
+.graphPillBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--teal);
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.graphPillBtn:hover {
+  background: var(--teal-light);
+  border-color: var(--teal);
+  transform: translateY(-1px);
 }
 
 @media (max-width: 1180px) {

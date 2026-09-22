@@ -1,0 +1,161 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inputRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 6px 8px 6px 18px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.hero .inputRow {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.inputRow:focus-within {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px var(--teal-tint);
+}
+
+.leadingIcon {
+  display: flex;
+  color: var(--teal);
+  flex-shrink: 0;
+}
+
+.inputRow input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: none;
+  font-size: 15px;
+  color: var(--text-primary);
+  min-width: 0;
+}
+
+.inputRow input::placeholder {
+  color: var(--text-muted);
+}
+
+.ghostIconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.ghostIconBtn:hover {
+  background: var(--surface-alt);
+  color: var(--teal);
+}
+
+.ghostIconBtn.listening {
+  color: #fff;
+  background: var(--orange);
+}
+
+.sendBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  background: var(--teal);
+  color: #fff;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.sendBtn:hover:not(:disabled) {
+  background: var(--teal-dark);
+}
+
+.sendBtn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.sendBtn:disabled {
+  background: var(--border);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.notice {
+  padding: 0 18px;
+  font-size: 12.5px;
+  color: var(--orange-dark);
+}
+
+.footerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 0 4px;
+}
+
+.langPills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.langPill {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: var(--radius-pill);
+  padding: 5px 11px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.langPill:hover {
+  border-color: var(--teal);
+}
+
+.langPillActive {
+  background: var(--teal-dark);
+  border-color: var(--teal-dark);
+  color: #fff;
+}
+
+.moreLangs {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 5px 4px;
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .footerRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

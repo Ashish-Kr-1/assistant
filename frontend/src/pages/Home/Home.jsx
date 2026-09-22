@@ -1,60 +1,57 @@
 import { Link } from "react-router-dom"
 import styles from "./Home.module.css"
+import Logo from "../../components/Logo/Logo"
+import Icon from "../../components/Icons/IconSet"
+import { brand, featureStrip } from "../../demo"
 
 export default function Home() {
   return (
     <div className={styles.landing}>
-      <div className={styles.bgOrbs} aria-hidden="true">
-        <span className={styles.orb1} />
-        <span className={styles.orb2} />
-        <span className={styles.orb3} />
-      </div>
-      <div className={styles.grain} aria-hidden="true" />
+      <div className={styles.leafDecor} aria-hidden="true" />
+
+      <header className={styles.topBar}>
+        <Logo />
+        <Link to="/assistant" className={styles.navCta}>
+          Ask {brand.name}
+        </Link>
+      </header>
 
       <main className={styles.hero}>
-        <div className={styles.logoWrap}>
-          <span className={styles.logoRing} />
-          <span className={styles.logoMark}>CI</span>
-        </div>
-
-        <h1 className={styles.brandName}>
-          Charaka IP
+        <span className={styles.eyebrow}>India&rsquo;s traditional-knowledge IP companion</span>
+        <h1 className={styles.title}>
+          {brand.name} <span className={styles.titleAccent}>{brand.tagline}</span>
         </h1>
-
-        <p className={styles.tagline}>Ancient wisdom, rigorously defended.</p>
-
-        <p className={styles.subtext}>
-          Your guide through India&rsquo;s IP law, ABS duties, and traditional-knowledge
-          protection — built for the ones who keep showing up, one question at a time.
+        <p className={styles.subtitle}>{brand.quote}</p>
+        <p className={styles.description}>
+          Evidence-backed guidance on patentability, ABS duties and regulatory classification for Ayurvedic and
+          herbal innovations &mdash; every answer cited against the underlying statute, treaty or classical text.
         </p>
 
-        <Link to="/chatbot" className={styles.ctaBtn}>
+        <Link to="/assistant" className={styles.ctaBtn}>
           <span>Begin the Conversation</span>
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.4"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={styles.ctaArrow}
-            aria-hidden="true"
-          >
-            <line x1="4" y1="12" x2="20" y2="12" />
-            <polyline points="13 5 20 12 13 19" />
-          </svg>
+          <Icon name="arrow-right" size={18} />
         </Link>
 
         <div className={styles.trustRow}>
-          <span>Patents Act</span>
+          <span>Patents Act, 1970</span>
           <span className={styles.dot} />
           <span>TKDL</span>
           <span className={styles.dot} />
           <span>Nagoya Protocol</span>
         </div>
       </main>
+
+      <section className={styles.features}>
+        {featureStrip.map((f) => (
+          <div className={styles.featureCard} key={f.key}>
+            <span className={styles.featureIcon}>
+              <Icon name={f.icon} size={18} />
+            </span>
+            <h3>{f.title}</h3>
+            <p>{f.subtitle}</p>
+          </div>
+        ))}
+      </section>
 
       <footer className={styles.footer}>
         Educational &amp; guidance purposes only — does not constitute formal legal advice.

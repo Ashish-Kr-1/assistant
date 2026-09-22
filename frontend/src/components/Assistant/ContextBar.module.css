@@ -1,0 +1,106 @@
+.bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 22px;
+  flex-wrap: wrap;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.groupLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.pillRow {
+  display: flex;
+  gap: 6px;
+}
+
+.pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: var(--radius-pill);
+  padding: 7px 13px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.pillActive {
+  border-color: var(--teal);
+  background: var(--teal-tint);
+  color: var(--teal);
+}
+
+.selectWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: var(--radius-pill);
+  padding: 7px 30px 7px 12px;
+  min-width: 190px;
+}
+
+.selectIcon {
+  color: var(--green);
+  margin-right: 7px;
+  flex-shrink: 0;
+}
+
+.selectWrap select {
+  appearance: none;
+  border: none;
+  background: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  width: 100%;
+  cursor: pointer;
+}
+
+.selectWrap select:focus {
+  outline: none;
+}
+
+.selectChevron {
+  position: absolute;
+  right: 10px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.changeContext {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--teal);
+  cursor: pointer;
+  padding: 8px 4px;
+}
+
+.changeContext:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 700px) {
+  .changeContext {
+    margin-left: 0;
+  }
+}
